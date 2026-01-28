@@ -4,17 +4,30 @@
 
 import { Button } from "@/components/ui/Button";
 import { GlowText } from "@/components/ui/GlowText";
+import { TypewriterText } from "@/components/ui/TypewriterText";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import { ChevronRight, Heart } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 export default function WelcomeStep() {
   const router = useRouter();
+  const [typingStep, setTypingStep] = useState(0);
 
   const handleNext = () => {
     router.push("/onboarding/duration");
+  };
+
+  const advanceStep = (nextStep: number, delay: number = 0) => {
+    if (delay === 0) {
+      setTypingStep(nextStep);
+    } else {
+      setTimeout(() => {
+        setTypingStep(nextStep);
+      }, delay);
+    }
   };
 
   return (
@@ -37,32 +50,58 @@ export default function WelcomeStep() {
           <View style={styles.messageCard}>
             <Text style={styles.messageTitle}>A note from the founder</Text>
 
-            <Text style={styles.messageText}>Hey, I'm Yakub.</Text>
+            <TypewriterText
+              text="Hey, Yakub here. So I nearly died cause of vaping."
+              style={styles.messageText}
+              start={typingStep >= 0}
+              onComplete={() => advanceStep(1, 400)}
+              hideCursorOnComplete={true}
+              speed={35}
+            />
 
-            <Text style={styles.messageText}>
-              Like you, I really wanted to quit vaping, but every app I tried
-              felt generic and just money grab.
-            </Text>
+            <View style={styles.spacer} />
 
-            <Text style={styles.messageText}>
-              So I built iDontVape for myself first – to visualize what was
-              happening inside my body and to have a companion that truly gets
-              the struggle.
-            </Text>
+            <TypewriterText
+              text="Like you, I really wanted to quit vaping, but every app I tried felt generic and just money grab."
+              style={styles.messageText}
+              start={typingStep >= 1}
+              onComplete={() => advanceStep(2, 600)}
+              hideCursorOnComplete={true}
+              speed={18}
+            />
 
-            <Text style={styles.messageHighlight}>We'll quit together.</Text>
+            <View style={styles.spacer} />
 
-            <Text style={styles.signature}>– Yakub</Text>
+            <TypewriterText
+              text="I built I Don't Vape for myself first – to visualize what was happening to my body."
+              style={styles.messageText}
+              start={typingStep >= 2}
+              onComplete={() => advanceStep(3, 500)}
+              hideCursorOnComplete={false}
+              speed={18}
+            />
+
+            <View style={styles.spacer} />
+
+            {typingStep >= 3 && (
+              <Animated.View entering={FadeIn.duration(800)}>
+                <Text style={styles.messageHighlight}>
+                  We'll quit together.
+                </Text>
+                <Text style={styles.signature}>– Yakub</Text>
+              </Animated.View>
+            )}
           </View>
         </View>
       </ScrollView>
 
       {/* Navigation */}
-      <View style={styles.navigation}>
+      <View style={[styles.navigation, { opacity: typingStep >= 3 ? 1 : 0 }]}>
         <Button
           title="Let's Begin"
           onPress={handleNext}
           icon={<ChevronRight size={20} color="#000" />}
+          disabled={typingStep < 3}
         />
       </View>
     </SafeAreaView>
@@ -79,6 +118,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 100, // Extra padding for button
   },
   content: {
     flex: 1,
@@ -99,6 +139,7 @@ const styles = StyleSheet.create({
     padding: 24,
     borderWidth: 1,
     borderColor: "rgba(0, 240, 255, 0.2)",
+    minHeight: 400, // Prevent layout jump
   },
   messageTitle: {
     fontSize: 14,
@@ -113,16 +154,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 26,
     color: Colors.white,
-    marginBottom: 16,
+    // marginBottom: 16, // Removed margin from text itself, handle with spacer or container
     opacity: 0.9,
+  },
+  spacer: {
+    height: 16,
   },
   messageHighlight: {
     fontSize: 18,
     lineHeight: 28,
     color: Colors.healthGreen,
     fontWeight: "600",
-    marginTop: 8,
-    marginBottom: 16,
+    marginTop: 24,
+    marginBottom: 8,
     textAlign: "center",
   },
   signature: {
@@ -132,21 +176,14 @@ const styles = StyleSheet.create({
     textAlign: "right",
     marginTop: 8,
   },
-  encouragement: {
-    marginTop: 32,
-    paddingHorizontal: 8,
-  },
-  encouragementText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: Colors.subtleText,
-    textAlign: "center",
-  },
   navigation: {
+    position: "absolute",
+    bottom: 40,
+    left: 0,
+    right: 0,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingBottom: 40,
     paddingHorizontal: 24,
   },
 });
