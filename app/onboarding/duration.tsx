@@ -2,10 +2,8 @@
  * Duration Step - How long have you vaped?
  */
 
-import { ProgressDots } from "@/components/Onboarding/ProgressDots";
 import { SliderInput } from "@/components/Onboarding/SliderInput";
 import { Button } from "@/components/ui/Button";
-import { GlowText } from "@/components/ui/GlowText";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
@@ -52,15 +50,6 @@ export default function DurationStep() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <GlowText size="sm">SYSTEM DIAGNOSTICS</GlowText>
-          <Text style={styles.title}>Bio-Twin Calibration</Text>
-        </View>
-
-        {/* Progress */}
-        <ProgressDots totalSteps={3} currentStep={0} />
-
         {/* Question */}
         <View style={styles.questionContainer}>
           <Text style={styles.question}>How long have you vaped?</Text>
@@ -100,17 +89,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: Colors.white,
-    marginTop: 8,
+    paddingTop: 20,
   },
   questionContainer: {
     flex: 1,
