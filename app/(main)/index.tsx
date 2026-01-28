@@ -3,7 +3,7 @@
  */
 
 import { BioTwinScene } from "@/components/BioTwin/BioTwinScene";
-import { IntegrityRing } from "@/components/Dashboard/IntegrityRing";
+import { LungAnnotation } from "@/components/Dashboard/LungAnnotation";
 import { MilestoneCard } from "@/components/Dashboard/MilestoneCard";
 import { StatCard } from "@/components/Dashboard/StatCard";
 import { Button } from "@/components/ui/Button";
@@ -14,20 +14,20 @@ import { useUserStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-    Activity,
-    AlertTriangle,
-    Clock,
-    DollarSign,
-    List,
+  Activity,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+  List,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 export default function Dashboard() {
@@ -107,10 +107,8 @@ export default function Dashboard() {
             height={320}
           />
 
-          {/* Integrity Ring Overlay */}
-          <View style={styles.integrityOverlay}>
-            <IntegrityRing score={systemIntegrity} size={120} />
-          </View>
+          {/* Lung Recovery Annotation */}
+          <LungAnnotation score={systemIntegrity} size={65} position="right" />
         </View>
 
         {/* Stats Section */}
@@ -220,13 +218,7 @@ const styles = StyleSheet.create({
     position: "relative",
     marginTop: 8,
   },
-  integrityOverlay: {
-    position: "absolute",
-    bottom: 20,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
+
   statsSection: {
     paddingHorizontal: 20,
     gap: 16,
