@@ -7,17 +7,17 @@ import { Colors } from "@/constants/Colors";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, {
-  Easing,
-  useAnimatedProps,
-  useSharedValue,
-  withTiming,
+    Easing,
+    useAnimatedProps,
+    useSharedValue,
+    withTiming,
 } from "react-native-reanimated";
 import Svg, {
-  Circle,
-  Defs,
-  Path,
-  Stop,
-  LinearGradient as SvgLinearGradient,
+    Circle,
+    Defs,
+    Path,
+    Stop,
+    LinearGradient as SvgLinearGradient,
 } from "react-native-svg";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -28,11 +28,19 @@ interface LungAnnotationProps {
   position?: "left" | "right";
 }
 
-export function LungAnnotation({
+export function SystemAnnotation({
   score,
+  label,
   size = 100,
   position = "right",
-}: LungAnnotationProps) {
+  style,
+}: {
+  score: number;
+  label: string;
+  size?: number;
+  position?: "left" | "right";
+  style?: any;
+}) {
   const strokeWidth = 5;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -57,6 +65,7 @@ export function LungAnnotation({
       style={[
         styles.container,
         position === "left" ? styles.containerLeft : styles.containerRight,
+        style,
       ]}
     >
       {/* Connecting line */}
@@ -101,7 +110,7 @@ export function LungAnnotation({
       </Svg>
 
       {/* Progress Ring and Text */}
-      <View style={styles.ringContainer}>
+      <View style={[styles.ringContainer, { width: size, height: size }]}>
         <Svg width={size} height={size} style={styles.svg}>
           <Defs>
             <SvgLinearGradient
@@ -152,7 +161,7 @@ export function LungAnnotation({
       {/* Label below */}
       <View style={styles.labelContainer}>
         <View style={styles.labelDot} />
-        <Text style={styles.label}>LUNG RECOVERY</Text>
+        <Text style={styles.label}>{label}</Text>
       </View>
     </View>
   );
@@ -177,11 +186,13 @@ const styles = StyleSheet.create({
   },
   connectorLeft: {
     right: -10,
-    top: 15,
+    top: "55%",
+    transform: [{ translateY: -40 }],
   },
   connectorRight: {
     left: -10,
-    top: 15,
+    top: "55%",
+    transform: [{ translateY: -40 }],
   },
   ringContainer: {
     position: "relative",
@@ -213,7 +224,7 @@ const styles = StyleSheet.create({
   labelContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
     gap: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -229,7 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neonCyan,
   },
   label: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: "700",
     color: Colors.neonCyan,
     letterSpacing: 1.5,

@@ -3,9 +3,9 @@
  */
 
 import { BioTwinScene } from "@/components/BioTwin/BioTwinScene";
-import { LungAnnotation } from "@/components/Dashboard/LungAnnotation";
 import { MilestoneCard } from "@/components/Dashboard/MilestoneCard";
 import { StatCard } from "@/components/Dashboard/StatCard";
+import { SystemAnnotation } from "@/components/Dashboard/SystemAnnotation";
 import { Button } from "@/components/ui/Button";
 import { GlowText } from "@/components/ui/GlowText";
 import { Colors } from "@/constants/Colors";
@@ -108,7 +108,22 @@ export default function Dashboard() {
           />
 
           {/* Lung Recovery Annotation */}
-          <LungAnnotation score={systemIntegrity} size={65} position="right" />
+          <SystemAnnotation
+            score={systemIntegrity}
+            label="LUNG RECOVERY"
+            size={65}
+            position="right"
+            style={{ top: 125 }}
+          />
+
+          {/* Heart Recovery Annotation */}
+          <SystemAnnotation
+            score={systemIntegrity}
+            label="HEART RECOVERY"
+            size={65}
+            position="left"
+            style={{ top: 85 }}
+          />
         </View>
 
         {/* Stats Section */}
