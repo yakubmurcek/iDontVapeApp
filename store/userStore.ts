@@ -2,16 +2,16 @@
  * User Store - Main state for user profile and recovery tracking
  */
 
-import { create } from 'zustand';
-import { createJSONStorage, persist, StateStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { 
-  calculateInitialDamage, 
-  calculateSystemIntegrity,
-  getCurrentMilestoneProgress,
-  formatTimeSinceQuit,
-  MilestoneProgress,
-} from '@/utils/recoveryCalculator';
+import {
+    calculateInitialDamage,
+    calculateSystemIntegrity,
+    formatTimeSinceQuit,
+    getCurrentMilestoneProgress,
+    MilestoneProgress,
+} from "@/utils/recoveryCalculator";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
+import { createJSONStorage, persist, StateStorage } from "zustand/middleware";
 
 // AsyncStorage adapter
 const asyncStorageAdapter: StateStorage = {
@@ -42,12 +42,13 @@ interface UserState {
   initialDamageScore: number;
   hasCompletedOnboarding: boolean;
   costPerPuff: number;
-  
+
   // Actions
   completeOnboarding: (data: OnboardingData) => void;
   recordRelapse: () => void;
   resetProgress: () => void;
-  
+  clearData: () => void;
+
   // Computed (called as functions since Zustand doesn't have native getters)
   getRecoveryStartDate: () => Date;
   getTimeSinceQuit: () => number;
@@ -71,15 +72,15 @@ export const useUserStore = create<UserState>()(
       initialDamageScore: 0.5,
       hasCompletedOnboarding: false,
       costPerPuff: 0.02, // Default ~$0.02 per puff
-      
+
       // Actions
       completeOnboarding: (data: OnboardingData) => {
         const damageScore = calculateInitialDamage(
           data.vapingDurationMonths,
           data.nicotineStrength,
-          data.puffsPerDay
+          data.puffsPerDay,
         );
-        
+
         set({
           vapingDurationMonths: data.vapingDurationMonths,
           nicotineStrength: data.nicotineStrength,
@@ -90,63 +91,76 @@ export const useUserStore = create<UserState>()(
           hasCompletedOnboarding: true,
         });
       },
-      
+
       recordRelapse: () => {
         set({ lastVapeDate: new Date().toISOString() });
       },
-      
+
       resetProgress: () => {
         set({
           quitDate: new Date().toISOString(),
           lastVapeDate: null,
         });
       },
-      
+
+      clearData: () => {
+        set({
+          vapingDurationMonths: 0,
+          nicotineStrength: 20,
+          puffsPerDay: 100,
+          quitDate: null,
+          lastVapeDate: null,
+          initialDamageScore: 0.5,
+          hasCompletedOnboarding: false,
+          costPerPuff: 0.02,
+        });
+      },
+
       // Computed
       getRecoveryStartDate: () => {
         const state = get();
         const dateStr = state.lastVapeDate ?? state.quitDate;
         return dateStr ? new Date(dateStr) : new Date();
       },
-      
+
       getTimeSinceQuit: () => {
         const recoveryStart = get().getRecoveryStartDate();
         return Date.now() - recoveryStart.getTime();
       },
-      
+
       getHoursSinceQuit: () => {
         return get().getTimeSinceQuit() / (1000 * 60 * 60);
       },
-      
+
       getDaysSinceQuit: () => {
         return Math.floor(get().getTimeSinceQuit() / (1000 * 60 * 60 * 24));
       },
-      
+
       getMoneySaved: () => {
         const state = get();
         const puffsAvoided = state.getDaysSinceQuit() * state.puffsPerDay;
         return puffsAvoided * state.costPerPuff;
       },
-      
+
       getFormattedTimeSinceQuit: () => {
         return formatTimeSinceQuit(get().getTimeSinceQuit());
       },
-      
+
       getSystemIntegrity: () => {
         const state = get();
         return calculateSystemIntegrity(
           state.initialDamageScore,
-          state.getHoursSinceQuit()
+          state.getHoursSinceQuit(),
         );
       },
-      
+
       getCurrentMilestone: () => {
         return getCurrentMilestoneProgress(get().getHoursSinceQuit());
       },
     }),
     {
-      name: 'user-profile',
+      name: "user-profile",
       storage: createJSONStorage(() => asyncStorageAdapter),
-    }
-  )
+    },
+  ),
 );

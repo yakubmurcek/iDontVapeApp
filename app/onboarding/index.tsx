@@ -2,18 +2,18 @@
  * Onboarding Index - Redirects to first step
  */
 
-import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { Colors } from "@/constants/Colors";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export default function OnboardingIndex() {
   const router = useRouter();
-  
+
   useEffect(() => {
-    router.replace('/onboarding/duration');
+    router.replace("/onboarding/welcome");
   }, []);
-  
+
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={Colors.neonCyan} />
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.spaceCharcoal,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
