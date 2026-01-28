@@ -2,12 +2,12 @@
  * Welcome Step - Personal message from the founder
  */
 
-import { Button } from "@/components/ui/Button";
 import { GlowText } from "@/components/ui/GlowText";
+import { SlideButton } from "@/components/ui/SlideButton";
 import { TypewriterText } from "@/components/ui/TypewriterText";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
-import { ChevronRight, Heart } from "lucide-react-native";
+import { Heart } from "lucide-react-native";
 import React, { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -17,7 +17,7 @@ export default function WelcomeStep() {
   const [typingStep, setTypingStep] = useState(0);
 
   const handleNext = () => {
-    router.push("/onboarding/duration");
+    router.replace("/onboarding/duration");
   };
 
   const advanceStep = (nextStep: number, delay: number = 0) => {
@@ -97,12 +97,11 @@ export default function WelcomeStep() {
 
       {/* Navigation */}
       <View style={[styles.navigation, { opacity: typingStep >= 3 ? 1 : 0 }]}>
-        <Button
-          title="Let's Begin"
-          onPress={handleNext}
-          icon={<ChevronRight size={20} color="#000" />}
-          disabled={typingStep < 3}
-        />
+        {typingStep >= 3 && (
+          <Animated.View entering={FadeIn.duration(500).delay(200)}>
+            <SlideButton onComplete={handleNext} text="Slide to Begin" />
+          </Animated.View>
+        )}
       </View>
     </SafeAreaView>
   );
