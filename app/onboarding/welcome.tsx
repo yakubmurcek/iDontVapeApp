@@ -8,13 +8,34 @@ import { TypewriterText } from "@/components/ui/TypewriterText";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import { Heart } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 
 export default function WelcomeStep() {
   const router = useRouter();
   const [typingStep, setTypingStep] = useState(0);
+
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withTiming(1.18, { duration: 1300, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+  }, []);
+
+  const animatedHeartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   const handleNext = () => {
     router.replace("/onboarding/duration");
@@ -41,7 +62,13 @@ export default function WelcomeStep() {
           {/* Welcome Header */}
           <View style={styles.header}>
             <View style={styles.heartContainer}>
-              <Heart size={32} color={Colors.neonCyan} fill={Colors.neonCyan} />
+              <Animated.View style={animatedHeartStyle}>
+                <Heart
+                  size={32}
+                  color={Colors.neonCyan}
+                  fill={Colors.neonCyan}
+                />
+              </Animated.View>
             </View>
             <GlowText size="lg">Welcome</GlowText>
           </View>
@@ -51,12 +78,12 @@ export default function WelcomeStep() {
             <Text style={styles.messageTitle}>A note from the founder</Text>
 
             <TypewriterText
-              text="Hey, Yakub here. So I nearly died cause of vaping."
+              text="Hey, Yakub here. Vaping caused me to have incurable sharp pain in my chest."
               style={styles.messageText}
               start={typingStep >= 0}
               onComplete={() => advanceStep(1, 400)}
               hideCursorOnComplete={true}
-              speed={35}
+              speed={30}
             />
 
             <View style={styles.spacer} />
@@ -67,7 +94,7 @@ export default function WelcomeStep() {
               start={typingStep >= 1}
               onComplete={() => advanceStep(2, 600)}
               hideCursorOnComplete={true}
-              speed={18}
+              speed={15}
             />
 
             <View style={styles.spacer} />
@@ -78,7 +105,7 @@ export default function WelcomeStep() {
               start={typingStep >= 2}
               onComplete={() => advanceStep(3, 500)}
               hideCursorOnComplete={false}
-              speed={18}
+              speed={15}
             />
 
             <View style={styles.spacer} />

@@ -1,17 +1,23 @@
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { ChevronRight } from "lucide-react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+    cancelAnimation,
+    Easing,
     Extrapolation,
     interpolate,
     interpolateColor,
     runOnJS,
     useAnimatedStyle,
     useSharedValue,
+    withDelay,
+    withRepeat,
+    withSequence,
     withSpring,
+    withTiming,
 } from "react-native-reanimated";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -35,9 +41,45 @@ export function SlideButton({
 
   const context = useSharedValue({ x: 0 });
 
+  const hintX = useSharedValue(0);
+  const shimmer = useSharedValue(0);
+
+  useEffect(() => {
+    const runAnimations = () => {
+      // Shimmer effect (Breathing)
+      shimmer.value = withRepeat(
+        withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        -1,
+        true,
+      );
+
+      // Nudge effect (Beckoning)
+      hintX.value = withRepeat(
+        withSequence(
+          withDelay(
+            2000,
+            withTiming(20, {
+              duration: 500,
+              easing: Easing.out(Easing.cubic),
+            }),
+          ),
+          withTiming(0, { duration: 500, easing: Easing.out(Easing.cubic) }),
+        ),
+        -1,
+        false,
+      );
+    };
+
+    runAnimations();
+  }, []);
+
   const pan = Gesture.Pan()
     .onStart(() => {
       if (isComplete.value) return;
+      cancelAnimation(hintX);
+      cancelAnimation(shimmer);
+      hintX.value = withTiming(0);
+      shimmer.value = withTiming(0);
       context.value = { x: translateX.value };
     })
     .onUpdate((event) => {
@@ -73,12 +115,18 @@ export function SlideButton({
           damping: 15,
           stiffness: 120,
         });
+        // Restart shimmer for engagement if not completed
+        shimmer.value = withRepeat(
+          withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+          -1,
+          true,
+        );
       }
     });
 
   const animatedThumbStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: translateX.value }],
+      transform: [{ translateX: translateX.value + hintX.value }],
     };
   });
 
@@ -87,8 +135,14 @@ export function SlideButton({
       opacity: interpolate(
         translateX.value,
         [0, H_SWIPE_RANGE / 2],
-        [1, 0],
+        // Pulse opacity when idle (0.6 -> 1), fade out when dragging
+        [interpolate(shimmer.value, [0, 1], [0.6, 1]), 0],
         Extrapolation.CLAMP,
+      ),
+      color: interpolateColor(
+        shimmer.value,
+        [0, 1],
+        [Colors.white, Colors.neonCyan],
       ),
       transform: [
         {
@@ -98,6 +152,9 @@ export function SlideButton({
             [0, 20],
             Extrapolation.CLAMP,
           ),
+        },
+        {
+          scale: interpolate(shimmer.value, [0, 1], [0.98, 1.02]),
         },
       ],
     };
@@ -113,7 +170,15 @@ export function SlideButton({
       borderColor: interpolateColor(
         translateX.value,
         [0, H_SWIPE_RANGE],
-        ["rgba(255, 255, 255, 0.1)", Colors.neonCyan],
+        // Pulse border slightly with the shimmer
+        [
+          interpolateColor(
+            shimmer.value,
+            [0, 1],
+            ["rgba(255, 255, 255, 0.1)", "rgba(0, 240, 255, 0.3)"],
+          ),
+          Colors.neonCyan,
+        ],
       ),
     };
   });
@@ -128,7 +193,7 @@ export function SlideButton({
 
           <Animated.View style={[styles.thumbContainer, animatedThumbStyle]}>
             <LinearGradient
-              colors={["#00F0FF", "#0080FF"]}
+              colors={[Colors.neonCyan, Colors.dataBlue]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.thumb}
