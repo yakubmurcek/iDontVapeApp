@@ -45,6 +45,8 @@ export default function Dashboard() {
     (state) => state.getCurrentMilestone,
   );
   const getHoursSinceQuit = useUserStore((state) => state.getHoursSinceQuit);
+  const getLungRecovery = useUserStore((state) => state.getLungRecovery);
+  const getHeartRecovery = useUserStore((state) => state.getHeartRecovery);
 
   // Update time every second
   useEffect(() => {
@@ -60,6 +62,8 @@ export default function Dashboard() {
   const moneySaved = getMoneySaved();
   const milestone = getCurrentMilestone();
   const hoursSinceQuit = getHoursSinceQuit();
+  const lungRecovery = getLungRecovery();
+  const heartRecovery = getHeartRecovery();
   const damageLevel = 1 - systemIntegrity;
 
   const handleReset = () => {
@@ -109,7 +113,7 @@ export default function Dashboard() {
 
           {/* Lung Recovery Annotation */}
           <SystemAnnotation
-            score={systemIntegrity}
+            score={lungRecovery}
             label="LUNG RECOVERY"
             size={65}
             position="right"
@@ -118,7 +122,7 @@ export default function Dashboard() {
 
           {/* Heart Recovery Annotation */}
           <SystemAnnotation
-            score={systemIntegrity}
+            score={heartRecovery}
             label="HEART RECOVERY"
             size={65}
             position="left"

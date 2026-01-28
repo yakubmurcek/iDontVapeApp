@@ -2,21 +2,23 @@
  * SliderInput - Styled slider for onboarding inputs
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring,
+import { Colors } from "@/constants/Colors";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
   runOnJS,
-} from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '@/constants/Colors';
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SLIDER_WIDTH = SCREEN_WIDTH - 80;
 const THUMB_SIZE = 28;
+
+type ScaleType = "linear" | "logarithmic";
 
 interface SliderInputProps {
   value: number;
@@ -26,7 +28,45 @@ interface SliderInputProps {
   onChange: (value: number) => void;
   formatValue?: (value: number) => string;
   label?: string;
+  /** Scale type: 'linear' (default) or 'logarithmic' (spreads out smaller values) */
+  scale?: ScaleType;
 }
+
+// Power factor for non-linear scaling (0.5 = square root, gentler than log)
+const SCALE_POWER = 0.5;
+
+// Convert value to slider position (0-1) based on scale
+const valueToPosition = (
+  value: number,
+  min: number,
+  max: number,
+  scale: ScaleType,
+): number => {
+  if (scale === "logarithmic") {
+    // Use power scale (square root) - gentler than pure logarithmic
+    // This gives more space to smaller values without being too extreme
+    const normalized = (value - min) / (max - min);
+    return Math.pow(normalized, SCALE_POWER);
+  }
+  // Linear scale
+  return (value - min) / (max - min);
+};
+
+// Convert slider position (0-1) to value based on scale
+const positionToValue = (
+  position: number,
+  min: number,
+  max: number,
+  scale: ScaleType,
+): number => {
+  if (scale === "logarithmic") {
+    // Inverse of power scale (square root)
+    const normalized = Math.pow(position, 1 / SCALE_POWER);
+    return min + normalized * (max - min);
+  }
+  // Linear scale
+  return min + position * (max - min);
+};
 
 export function SliderInput({
   value,
@@ -36,25 +76,28 @@ export function SliderInput({
   onChange,
   formatValue,
   label,
+  scale = "linear",
 }: SliderInputProps) {
-  const progress = (value - min) / (max - min);
+  const progress = valueToPosition(value, min, max, scale);
   const translateX = useSharedValue(progress * (SLIDER_WIDTH - THUMB_SIZE));
   const startX = useSharedValue(0);
-  
+
   React.useEffect(() => {
-    const newProgress = (value - min) / (max - min);
-    translateX.value = withSpring(newProgress * (SLIDER_WIDTH - THUMB_SIZE), { damping: 20 });
-  }, [value, min, max]);
-  
+    const newProgress = valueToPosition(value, min, max, scale);
+    translateX.value = withSpring(newProgress * (SLIDER_WIDTH - THUMB_SIZE), {
+      damping: 20,
+    });
+  }, [value, min, max, scale]);
+
   const updateValue = (x: number) => {
     const clampedX = Math.max(0, Math.min(x, SLIDER_WIDTH - THUMB_SIZE));
-    const progress = clampedX / (SLIDER_WIDTH - THUMB_SIZE);
-    const rawValue = min + progress * (max - min);
+    const position = clampedX / (SLIDER_WIDTH - THUMB_SIZE);
+    const rawValue = positionToValue(position, min, max, scale);
     const steppedValue = Math.round(rawValue / step) * step;
     const finalValue = Math.max(min, Math.min(max, steppedValue));
     onChange(finalValue);
   };
-  
+
   const panGesture = Gesture.Pan()
     .onStart(() => {
       startX.value = translateX.value;
@@ -64,23 +107,23 @@ export function SliderInput({
       translateX.value = Math.max(0, Math.min(newX, SLIDER_WIDTH - THUMB_SIZE));
       runOnJS(updateValue)(translateX.value);
     });
-  
+
   const thumbStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
-  
+
   const fillStyle = useAnimatedStyle(() => ({
     width: translateX.value + THUMB_SIZE / 2,
   }));
-  
+
   const displayValue = formatValue ? formatValue(value) : String(value);
-  
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
-      
+
       <Text style={styles.value}>{displayValue}</Text>
-      
+
       <View style={styles.sliderContainer}>
         {/* Track */}
         <View style={styles.track}>
@@ -93,7 +136,7 @@ export function SliderInput({
             />
           </Animated.View>
         </View>
-        
+
         {/* Thumb */}
         <GestureDetector gesture={panGesture}>
           <Animated.View style={[styles.thumb, thumbStyle]}>
@@ -101,11 +144,15 @@ export function SliderInput({
           </Animated.View>
         </GestureDetector>
       </View>
-      
+
       {/* Min/Max labels */}
       <View style={styles.rangeLabels}>
-        <Text style={styles.rangeLabel}>{formatValue ? formatValue(min) : min}</Text>
-        <Text style={styles.rangeLabel}>{formatValue ? formatValue(max) : max}</Text>
+        <Text style={styles.rangeLabel}>
+          {formatValue ? formatValue(min) : min}
+        </Text>
+        <Text style={styles.rangeLabel}>
+          {formatValue ? formatValue(max) : max}
+        </Text>
       </View>
     </View>
   );
@@ -114,46 +161,46 @@ export function SliderInput({
 const styles = StyleSheet.create({
   container: {
     width: SLIDER_WIDTH,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   label: {
     fontSize: 14,
     color: Colors.subtleText,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
   },
   value: {
     fontSize: 48,
-    fontWeight: '700',
+    fontWeight: "700",
     color: Colors.white,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
   },
   sliderContainer: {
     width: SLIDER_WIDTH,
     height: 40,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   track: {
     width: SLIDER_WIDTH,
     height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 3,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   trackFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: 3,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   thumb: {
-    position: 'absolute',
+    position: "absolute",
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
     backgroundColor: Colors.neonCyan,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: Colors.neonCyan,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
@@ -167,8 +214,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.spaceCharcoal,
   },
   rangeLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 8,
   },
   rangeLabel: {

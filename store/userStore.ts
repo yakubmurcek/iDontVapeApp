@@ -2,12 +2,14 @@
  * User Store - Main state for user profile and recovery tracking
  */
 
+import { OrganType } from "@/constants/milestones";
 import {
-    calculateInitialDamage,
-    calculateSystemIntegrity,
-    formatTimeSinceQuit,
-    getCurrentMilestoneProgress,
-    MilestoneProgress,
+  calculateInitialDamage,
+  calculateOrganRecovery,
+  calculateSystemIntegrity,
+  formatTimeSinceQuit,
+  getCurrentMilestoneProgress,
+  MilestoneProgress,
 } from "@/utils/recoveryCalculator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
@@ -57,6 +59,9 @@ interface UserState {
   getMoneySaved: () => number;
   getFormattedTimeSinceQuit: () => string;
   getSystemIntegrity: () => number;
+  getOrganRecovery: (organ: OrganType) => number;
+  getLungRecovery: () => number;
+  getHeartRecovery: () => number;
   getCurrentMilestone: () => MilestoneProgress;
 }
 
@@ -152,6 +157,23 @@ export const useUserStore = create<UserState>()(
           state.initialDamageScore,
           state.getHoursSinceQuit(),
         );
+      },
+
+      getOrganRecovery: (organ: OrganType) => {
+        const state = get();
+        return calculateOrganRecovery(
+          organ,
+          state.initialDamageScore,
+          state.getHoursSinceQuit(),
+        );
+      },
+
+      getLungRecovery: () => {
+        return get().getOrganRecovery("lungs");
+      },
+
+      getHeartRecovery: () => {
+        return get().getOrganRecovery("heart");
       },
 
       getCurrentMilestone: () => {
