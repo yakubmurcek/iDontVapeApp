@@ -8,10 +8,10 @@ import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
 } from "react-native-reanimated";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -29,6 +29,12 @@ interface SliderInputProps {
   formatValue?: (value: number) => string;
   label?: string;
   /** Scale type: 'linear' (default) or 'logarithmic' (spreads out smaller values) */
+  customValueToPosition?: (value: number, min: number, max: number) => number;
+  customPositionToValue?: (
+    position: number,
+    min: number,
+    max: number,
+  ) => number;
   scale?: ScaleType;
 }
 
@@ -41,7 +47,11 @@ const valueToPosition = (
   min: number,
   max: number,
   scale: ScaleType,
+  customScaler?: (value: number, min: number, max: number) => number,
 ): number => {
+  if (customScaler) {
+    return customScaler(value, min, max);
+  }
   if (scale === "logarithmic") {
     // Use power scale (square root) - gentler than pure logarithmic
     // This gives more space to smaller values without being too extreme
@@ -58,7 +68,11 @@ const positionToValue = (
   min: number,
   max: number,
   scale: ScaleType,
+  customScaler?: (position: number, min: number, max: number) => number,
 ): number => {
+  if (customScaler) {
+    return customScaler(position, min, max);
+  }
   if (scale === "logarithmic") {
     // Inverse of power scale (square root)
     const normalized = Math.pow(position, 1 / SCALE_POWER);
@@ -77,24 +91,51 @@ export function SliderInput({
   formatValue,
   label,
   scale = "linear",
+  customValueToPosition,
+  customPositionToValue,
 }: SliderInputProps) {
-  const progress = valueToPosition(value, min, max, scale);
+  const progress = valueToPosition(
+    value,
+    min,
+    max,
+    scale,
+    customValueToPosition,
+  );
   const translateX = useSharedValue(progress * (SLIDER_WIDTH - THUMB_SIZE));
   const startX = useSharedValue(0);
 
   React.useEffect(() => {
-    const newProgress = valueToPosition(value, min, max, scale);
+    const newProgress = valueToPosition(
+      value,
+      min,
+      max,
+      scale,
+      customValueToPosition,
+    );
     translateX.value = withSpring(newProgress * (SLIDER_WIDTH - THUMB_SIZE), {
       damping: 20,
     });
-  }, [value, min, max, scale]);
+  }, [value, min, max, scale, customValueToPosition]);
 
   const updateValue = (x: number) => {
     const clampedX = Math.max(0, Math.min(x, SLIDER_WIDTH - THUMB_SIZE));
     const position = clampedX / (SLIDER_WIDTH - THUMB_SIZE);
-    const rawValue = positionToValue(position, min, max, scale);
-    const steppedValue = Math.round(rawValue / step) * step;
-    const finalValue = Math.max(min, Math.min(max, steppedValue));
+    const rawValue = positionToValue(
+      position,
+      min,
+      max,
+      scale,
+      customPositionToValue,
+    );
+
+    // If customPositionToValue is used, we assume it handles stepping/snapping internally if needed
+    // Otherwise we apply the generic step
+    let finalValue = rawValue;
+    if (!customPositionToValue) {
+      const steppedValue = Math.round(rawValue / step) * step;
+      finalValue = Math.max(min, Math.min(max, steppedValue));
+    }
+
     onChange(finalValue);
   };
 

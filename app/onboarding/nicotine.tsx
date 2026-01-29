@@ -30,6 +30,50 @@ export default function NicotineStep() {
     router.push("/onboarding/puffs");
   };
 
+  // Custom non-linear scaling for nicotine
+  const nicotineToPosition = (
+    val: number,
+    min: number,
+    max: number,
+  ): number => {
+    // Range 1: 3 -> 20 (takes 0% -> 60% of slider)
+    if (val <= 20) {
+      return ((val - 3) / (20 - 3)) * 0.6;
+    }
+    // Range 2: 20 -> 30 (takes 60% -> 80% of slider)
+    if (val <= 30) {
+      return 0.6 + ((val - 20) / (30 - 20)) * 0.2;
+    }
+    // Range 3: 30 -> 50 (takes 80% -> 100% of slider)
+    return 0.8 + ((val - 30) / (max - 30)) * 0.2;
+  };
+
+  const positionToNicotine = (
+    pos: number,
+    min: number,
+    max: number,
+  ): number => {
+    let val: number;
+    let step = 1;
+
+    if (pos <= 0.6) {
+      // 0 -> 0.6 maps to 3 -> 20
+      val = 3 + (pos / 0.6) * (20 - 3);
+      step = 1;
+    } else if (pos <= 0.8) {
+      // 0.6 -> 0.8 maps to 20 -> 30
+      val = 20 + ((pos - 0.6) / 0.2) * (30 - 20);
+      step = 5;
+    } else {
+      // 0.8 -> 1.0 maps to 30 -> 50
+      val = 30 + ((pos - 0.8) / 0.2) * (max - 30);
+      step = 10;
+    }
+
+    const snapped = Math.round(val / step) * step;
+    return Math.max(min, Math.min(max, snapped));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -45,6 +89,8 @@ export default function NicotineStep() {
               step={1}
               onChange={setStrength}
               formatValue={formatStrength}
+              customValueToPosition={nicotineToPosition}
+              customPositionToValue={positionToNicotine}
             />
           </View>
 

@@ -38,6 +38,50 @@ export default function PuffsStep() {
     return "~3+ disposables/day";
   };
 
+  // Custom non-linear scaling for puffs
+  const puffsToPosition = (val: number, min: number, max: number): number => {
+    // Range 1: 50 -> 150 (takes 0% -> 50% of slider)
+    if (val <= 150) {
+      return ((val - 50) / (150 - 50)) * 0.5;
+    }
+    // Range 2: 150 -> 300 (takes 50% -> 80% of slider)
+    if (val <= 300) {
+      return 0.5 + ((val - 150) / (300 - 150)) * 0.3;
+    }
+    // Range 3: 300 -> 500+ (takes 80% -> 100% of slider)
+    return 0.8 + ((val - 300) / (max - 300)) * 0.2;
+  };
+
+  const positionToPuffs = (pos: number, min: number, max: number): number => {
+    let val: number;
+    let step: number;
+
+    if (pos <= 0.5) {
+      // 0 -> 0.5 maps to 50 -> 150
+      val = 50 + (pos / 0.5) * (150 - 50);
+
+      // Step logic for this range
+      if (val <= 100) {
+        step = 5;
+      } else {
+        step = 10;
+      }
+    } else if (pos <= 0.8) {
+      // 0.5 -> 0.8 maps to 150 -> 300
+      val = 150 + ((pos - 0.5) / 0.3) * (300 - 150);
+      step = 50;
+    } else {
+      // 0.8 -> 1.0 maps to 300 -> 500
+      val = 300 + ((pos - 0.8) / 0.2) * (max - 300);
+      step = 100;
+    }
+
+    // Snap to step
+    // Special handling to ensure we hit exact boundary points (150, 300) nicely
+    const snapped = Math.round(val / step) * step;
+    return Math.max(min, Math.min(max, snapped));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -50,10 +94,12 @@ export default function PuffsStep() {
               value={puffs}
               min={50}
               max={500}
-              step={10}
+              step={1} // Handled by custom logic, but providing base
               onChange={setPuffs}
               formatValue={formatPuffs}
               label="puffs"
+              customValueToPosition={puffsToPosition}
+              customPositionToValue={positionToPuffs}
             />
           </View>
 
