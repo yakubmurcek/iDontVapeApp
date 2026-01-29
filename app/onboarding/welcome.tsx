@@ -11,12 +11,12 @@ import { Heart } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, {
-  Easing,
-  FadeIn,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
+    Easing,
+    FadeIn,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
 } from "react-native-reanimated";
 
 export default function WelcomeStep() {
@@ -83,7 +83,7 @@ export default function WelcomeStep() {
               start={typingStep >= 0}
               onComplete={() => advanceStep(1, 400)}
               hideCursorOnComplete={true}
-              speed={30}
+              speed={24}
             />
 
             <View style={styles.spacer} />
@@ -94,7 +94,7 @@ export default function WelcomeStep() {
               start={typingStep >= 1}
               onComplete={() => advanceStep(2, 600)}
               hideCursorOnComplete={true}
-              speed={15}
+              speed={12}
             />
 
             <View style={styles.spacer} />
@@ -105,7 +105,7 @@ export default function WelcomeStep() {
               start={typingStep >= 2}
               onComplete={() => advanceStep(3, 500)}
               hideCursorOnComplete={false}
-              speed={15}
+              speed={12}
             />
 
             <View style={styles.spacer} />
