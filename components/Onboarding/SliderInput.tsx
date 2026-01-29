@@ -8,10 +8,10 @@ import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -112,8 +112,8 @@ export function SliderInput({
       scale,
       customValueToPosition,
     );
-    translateX.value = withSpring(newProgress * (SLIDER_WIDTH - THUMB_SIZE), {
-      damping: 20,
+    translateX.value = withTiming(newProgress * (SLIDER_WIDTH - THUMB_SIZE), {
+      duration: 150,
     });
   }, [value, min, max, scale, customValueToPosition]);
 
