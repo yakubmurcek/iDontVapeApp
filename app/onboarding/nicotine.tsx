@@ -31,21 +31,26 @@ export default function NicotineStep() {
   };
 
   // Custom non-linear scaling for nicotine
+  // Spread low values more: 3-10mg gets 40%, 10-20mg gets 25%, 20-30mg gets 20%, 30-50mg gets 15%
   const nicotineToPosition = (
     val: number,
     min: number,
     max: number,
   ): number => {
-    // Range 1: 3 -> 20 (takes 0% -> 60% of slider)
+    // Range 1: 3 -> 10 (takes 0% -> 40% of slider) - most granular for low nicotine
+    if (val <= 10) {
+      return ((val - 3) / (10 - 3)) * 0.4;
+    }
+    // Range 2: 10 -> 20 (takes 40% -> 65% of slider)
     if (val <= 20) {
-      return ((val - 3) / (20 - 3)) * 0.6;
+      return 0.4 + ((val - 10) / (20 - 10)) * 0.25;
     }
-    // Range 2: 20 -> 30 (takes 60% -> 80% of slider)
+    // Range 3: 20 -> 30 (takes 65% -> 85% of slider)
     if (val <= 30) {
-      return 0.6 + ((val - 20) / (30 - 20)) * 0.2;
+      return 0.65 + ((val - 20) / (30 - 20)) * 0.2;
     }
-    // Range 3: 30 -> 50 (takes 80% -> 100% of slider)
-    return 0.8 + ((val - 30) / (max - 30)) * 0.2;
+    // Range 4: 30 -> 50 (takes 85% -> 100% of slider)
+    return 0.85 + ((val - 30) / (max - 30)) * 0.15;
   };
 
   const positionToNicotine = (
@@ -56,17 +61,21 @@ export default function NicotineStep() {
     let val: number;
     let step = 1;
 
-    if (pos <= 0.6) {
-      // 0 -> 0.6 maps to 3 -> 20
-      val = 3 + (pos / 0.6) * (20 - 3);
+    if (pos <= 0.4) {
+      // 0 -> 0.4 maps to 3 -> 10 (step 1mg)
+      val = 3 + (pos / 0.4) * (10 - 3);
       step = 1;
-    } else if (pos <= 0.8) {
-      // 0.6 -> 0.8 maps to 20 -> 30
-      val = 20 + ((pos - 0.6) / 0.2) * (30 - 20);
+    } else if (pos <= 0.65) {
+      // 0.4 -> 0.65 maps to 10 -> 20 (step 1mg)
+      val = 10 + ((pos - 0.4) / 0.25) * (20 - 10);
+      step = 1;
+    } else if (pos <= 0.85) {
+      // 0.65 -> 0.85 maps to 20 -> 30 (step 5mg)
+      val = 20 + ((pos - 0.65) / 0.2) * (30 - 20);
       step = 5;
     } else {
-      // 0.8 -> 1.0 maps to 30 -> 50
-      val = 30 + ((pos - 0.8) / 0.2) * (max - 30);
+      // 0.85 -> 1.0 maps to 30 -> 50 (step 10mg)
+      val = 30 + ((pos - 0.85) / 0.15) * (max - 30);
       step = 10;
     }
 

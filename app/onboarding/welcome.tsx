@@ -9,7 +9,14 @@ import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import { Heart } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
 import Animated, {
     Easing,
     FadeIn,
@@ -22,6 +29,14 @@ import Animated, {
 export default function WelcomeStep() {
   const router = useRouter();
   const [typingStep, setTypingStep] = useState(0);
+  const [skipStep, setSkipStep] = useState<number | null>(null);
+
+  const handleTapToSkip = () => {
+    // Only skip the currently animating step (typingStep indicates which paragraph is active)
+    if (typingStep < 3) {
+      setSkipStep(typingStep);
+    }
+  };
 
   const scale = useSharedValue(1);
 
@@ -74,51 +89,56 @@ export default function WelcomeStep() {
           </View>
 
           {/* Personal Message */}
-          <View style={styles.messageCard}>
-            <Text style={styles.messageTitle}>A note from the founder</Text>
+          <Pressable onPress={handleTapToSkip}>
+            <View style={styles.messageCard}>
+              <Text style={styles.messageTitle}>A note from the founder</Text>
 
-            <TypewriterText
-              text="Hey, Yakub here. Vaping caused me to have incurable sharp pain in my chest."
-              style={styles.messageText}
-              start={typingStep >= 0}
-              onComplete={() => advanceStep(1, 400)}
-              hideCursorOnComplete={true}
-              speed={24}
-            />
+              <TypewriterText
+                text="Hey, Yakub here. Vaping caused me to have incurable sharp pain in my chest."
+                style={styles.messageText}
+                start={typingStep >= 0}
+                onComplete={() => advanceStep(1, 400)}
+                hideCursorOnComplete={true}
+                speed={24}
+                skipToEnd={skipStep === 0}
+              />
 
-            <View style={styles.spacer} />
+              <View style={styles.spacer} />
 
-            <TypewriterText
-              text="Like you, I really wanted to quit vaping, but every app I tried felt generic and just money grab."
-              style={styles.messageText}
-              start={typingStep >= 1}
-              onComplete={() => advanceStep(2, 600)}
-              hideCursorOnComplete={true}
-              speed={12}
-            />
+              <TypewriterText
+                text="Like you, I really wanted to quit vaping, but every app I tried felt generic and just money grab."
+                style={styles.messageText}
+                start={typingStep >= 1}
+                onComplete={() => advanceStep(2, 600)}
+                hideCursorOnComplete={true}
+                speed={12}
+                skipToEnd={skipStep === 1}
+              />
 
-            <View style={styles.spacer} />
+              <View style={styles.spacer} />
 
-            <TypewriterText
-              text="I built I Don't Vape for myself first – to visualize what was happening to my body."
-              style={styles.messageText}
-              start={typingStep >= 2}
-              onComplete={() => advanceStep(3, 500)}
-              hideCursorOnComplete={false}
-              speed={12}
-            />
+              <TypewriterText
+                text="I built I Don't Vape for myself first – to visualize what was happening to my body."
+                style={styles.messageText}
+                start={typingStep >= 2}
+                onComplete={() => advanceStep(3, 500)}
+                hideCursorOnComplete={false}
+                speed={12}
+                skipToEnd={skipStep === 2}
+              />
 
-            <View style={styles.spacer} />
+              <View style={styles.spacer} />
 
-            {typingStep >= 3 && (
-              <Animated.View entering={FadeIn.duration(800)}>
-                <Text style={styles.messageHighlight}>
-                  We'll quit together.
-                </Text>
-                <Text style={styles.signature}>– Yakub</Text>
-              </Animated.View>
-            )}
-          </View>
+              {typingStep >= 3 && (
+                <Animated.View entering={FadeIn.duration(800)}>
+                  <Text style={styles.messageHighlight}>
+                    We'll quit together.
+                  </Text>
+                  <Text style={styles.signature}>– Yakub</Text>
+                </Animated.View>
+              )}
+            </View>
+          </Pressable>
         </View>
       </ScrollView>
 

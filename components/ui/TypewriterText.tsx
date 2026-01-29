@@ -2,11 +2,11 @@ import { Colors } from "@/constants/Colors";
 import React, { useEffect, useState } from "react";
 import { StyleProp, StyleSheet, Text, TextStyle, View } from "react-native";
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withSequence,
-    withTiming,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from "react-native-reanimated";
 
 interface TypewriterTextProps {
@@ -18,6 +18,7 @@ interface TypewriterTextProps {
   cursorColor?: string;
   hideCursorOnComplete?: boolean;
   showCursor?: boolean; // Force cursor visibility state control from parent if needed
+  skipToEnd?: boolean; // Skip animation and show full text instantly
 }
 
 export const TypewriterText: React.FC<TypewriterTextProps> = ({
@@ -29,6 +30,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   cursorColor = Colors.neonCyan,
   hideCursorOnComplete = true,
   showCursor,
+  skipToEnd = false,
 }) => {
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -108,6 +110,16 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
       setHasCompleted(false);
     }
   }, [start, text]);
+
+  // Handle skipToEnd - instantly show full text
+  useEffect(() => {
+    if (skipToEnd && start && !hasCompleted) {
+      setDisplayedText(text);
+      setIsTyping(false);
+      setHasCompleted(true);
+      onComplete?.();
+    }
+  }, [skipToEnd, start, hasCompleted, text, onComplete]);
 
   // Decide cursor visibility
   // It's visible if:
