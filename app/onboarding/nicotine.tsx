@@ -81,6 +81,8 @@ export default function NicotineStep() {
         <View style={styles.questionContainer}>
           <Text style={styles.question}>What nicotine strength?</Text>
 
+          {/* Non-Linear (Current) */}
+          <Text style={styles.sliderLabel}>Non-Linear (Current)</Text>
           <View style={styles.sliderContainer}>
             <SliderInput
               value={strength}
@@ -91,6 +93,19 @@ export default function NicotineStep() {
               formatValue={formatStrength}
               customValueToPosition={nicotineToPosition}
               customPositionToValue={positionToNicotine}
+            />
+          </View>
+
+          {/* Linear (Original) */}
+          <Text style={styles.sliderLabel}>Linear (Original)</Text>
+          <View style={styles.sliderContainer}>
+            <SliderInput
+              value={strength}
+              min={3}
+              max={50}
+              step={1}
+              onChange={setStrength}
+              formatValue={formatStrength}
             />
           </View>
 
@@ -148,6 +163,14 @@ const styles = StyleSheet.create({
   sliderContainer: {
     width: "100%",
     alignItems: "center",
+  },
+  sliderLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.neonCyan,
+    textAlign: "center",
+    marginTop: 24,
+    marginBottom: 8,
   },
   reference: {
     marginTop: 32,
