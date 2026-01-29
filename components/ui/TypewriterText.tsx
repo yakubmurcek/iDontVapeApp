@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/Colors";
 import React, { useEffect, useState } from "react";
-import { StyleProp, StyleSheet, Text, TextStyle } from "react-native";
+import { StyleProp, StyleSheet, Text, TextStyle, View } from "react-native";
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -34,6 +34,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const cursorOpacity = useSharedValue(0);
+  const flatStyle = flattenStyle(style);
 
   // Cursor animation
   useEffect(() => {
@@ -123,24 +124,32 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   }));
 
   return (
-    <Text style={[style, styles.container]}>
-      {displayedText}
-      {isCursorVisible && (
-        <Animated.Text
-          style={[
-            style,
-            {
-              color: cursorColor,
-              fontSize: (flattenStyle(style)?.fontSize || 16) * 1.2,
-              lineHeight: undefined,
-            },
-            animatedCursorStyle,
-          ]}
-        >
-          |
-        </Animated.Text>
-      )}
-    </Text>
+    <View style={styles.wrapper}>
+      {/* Invisible placeholder to reserve full text space */}
+      <Text style={[style, styles.placeholder]} aria-hidden>
+        {text}
+      </Text>
+      {/* Visible typing text positioned on top */}
+      <View style={styles.textOverlay}>
+        <Text style={[style, styles.container]}>
+          {displayedText}
+          {isCursorVisible && (
+            <Animated.Text
+              style={[
+                {
+                  color: cursorColor,
+                  fontSize: flatStyle?.fontSize || 16,
+                  lineHeight: flatStyle?.lineHeight,
+                },
+                animatedCursorStyle,
+              ]}
+            >
+              |
+            </Animated.Text>
+          )}
+        </Text>
+      </View>
+    </View>
   );
 };
 
@@ -153,6 +162,18 @@ const flattenStyle = (style: StyleProp<TextStyle>): TextStyle | undefined => {
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: "relative",
+  },
+  placeholder: {
+    opacity: 0, // Invisible but takes up space
+  },
+  textOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+  },
   container: {
     // Ensure text and cursor flow together
   },
