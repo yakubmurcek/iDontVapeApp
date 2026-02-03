@@ -2,31 +2,34 @@
  * Root Layout - App entry with providers
  */
 
-import 'react-native-reanimated';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { Colors } from "@/constants/Colors";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { SuperwallProvider } from "expo-superwall";
+import { StyleSheet, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <View style={styles.container}>
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: Colors.spaceCharcoal },
-            animation: 'fade',
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(main)" />
-        </Stack>
-      </View>
-    </GestureHandlerRootView>
+    <SuperwallProvider apiKeys={{ ios: "pk_NcyeSppmLwP7ZvujgyFeH" }}>
+      <GestureHandlerRootView style={styles.container}>
+        <View style={styles.container}>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: Colors.spaceCharcoal },
+              animation: "fade",
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(main)" />
+          </Stack>
+        </View>
+      </GestureHandlerRootView>
+    </SuperwallProvider>
   );
 }
 
