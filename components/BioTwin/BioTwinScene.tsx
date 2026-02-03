@@ -54,8 +54,8 @@ export function BioTwinScene({
         <View style={styles.bloodVesselsContainer}>
           <BloodVessels
             recoveryProgress={recoveryProgress}
-            width={SCREEN_WIDTH * 0.8}
-            height={height * 0.85}
+            width={SCREEN_WIDTH * 0.92}
+            height={height * 0.98}
           />
         </View>
 
@@ -63,14 +63,14 @@ export function BioTwinScene({
         <View style={styles.lungsContainer}>
           <Lungs
             recoveryProgress={recoveryProgress}
-            width={SCREEN_WIDTH * 0.7}
-            height={height * 0.6}
+            width={SCREEN_WIDTH * 0.8}
+            height={height * 0.69}
           />
         </View>
 
         {/* Heart in the center-front */}
         <View style={styles.heartContainer}>
-          <Heart recoveryProgress={recoveryProgress} width={80} height={80} />
+          <Heart recoveryProgress={recoveryProgress} width={92} height={92} />
         </View>
       </Animated.View>
     </View>
