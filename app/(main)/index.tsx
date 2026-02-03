@@ -13,6 +13,7 @@ import { useLogsStore } from "@/store/logsStore";
 import { useUserStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { usePlacement } from "expo-superwall";
 import {
     Activity,
     AlertTriangle,
@@ -33,6 +34,14 @@ import {
 export default function Dashboard() {
   const router = useRouter();
 
+  // Superwall paywall placement
+  const { registerPlacement } = usePlacement({
+    onError: (err) => console.error("Paywall Error:", err),
+    onPresent: (info) => console.log("Paywall Presented:", info),
+    onDismiss: (info, result) =>
+      console.log("Paywall Dismissed:", info, "Result:", result),
+  });
+
   // Subscribe to user store
   const initialDamageScore = useUserStore((state) => state.initialDamageScore);
   const getFormattedTimeSinceQuit = useUserStore(
@@ -46,6 +55,15 @@ export default function Dashboard() {
   const getHoursSinceQuit = useUserStore((state) => state.getHoursSinceQuit);
   const getLungRecovery = useUserStore((state) => state.getLungRecovery);
   const getHeartRecovery = useUserStore((state) => state.getHeartRecovery);
+
+  // Show paywall 2 seconds after screen loads
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      await registerPlacement({ placement: "campaign_trigger" });
+    }, 2000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update time every second to trigger re-render
   useEffect(() => {
