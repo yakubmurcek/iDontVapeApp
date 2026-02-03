@@ -2,16 +2,21 @@
  * IntegrityRing - Circular progress indicator showing system integrity
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedProps, 
-  withTiming, 
-  Easing,
-} from 'react-native-reanimated';
-import { Colors } from '@/constants/Colors';
+import { Colors } from "@/constants/Colors";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import Animated, {
+    Easing,
+    useAnimatedProps,
+    useSharedValue,
+    withTiming,
+} from "react-native-reanimated";
+import Svg, {
+    Circle,
+    Defs,
+    Stop,
+    LinearGradient as SvgLinearGradient,
+} from "react-native-svg";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -24,22 +29,23 @@ export function IntegrityRing({ score, size = 140 }: IntegrityRingProps) {
   const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  
+
   const animatedProgress = useSharedValue(0);
-  
+
   React.useEffect(() => {
-    animatedProgress.value = withTiming(score, { 
-      duration: 1500, 
-      easing: Easing.out(Easing.cubic) 
+    animatedProgress.value = withTiming(score, {
+      duration: 1500,
+      easing: Easing.out(Easing.cubic),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [score]);
-  
+
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference * (1 - animatedProgress.value),
   }));
-  
+
   const percentage = Math.round(score * 100);
-  
+
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size} style={styles.svg}>
@@ -49,7 +55,7 @@ export function IntegrityRing({ score, size = 140 }: IntegrityRingProps) {
             <Stop offset="100%" stopColor={Colors.healthGreen} />
           </SvgLinearGradient>
         </Defs>
-        
+
         {/* Background circle */}
         <Circle
           cx={size / 2}
@@ -59,7 +65,7 @@ export function IntegrityRing({ score, size = 140 }: IntegrityRingProps) {
           strokeWidth={strokeWidth}
           fill="none"
         />
-        
+
         {/* Progress circle */}
         <AnimatedCircle
           cx={size / 2}
@@ -75,7 +81,7 @@ export function IntegrityRing({ score, size = 140 }: IntegrityRingProps) {
           origin={`${size / 2}, ${size / 2}`}
         />
       </Svg>
-      
+
       {/* Percentage text */}
       <View style={styles.textContainer}>
         <Text style={styles.percentage}>{percentage}</Text>
@@ -88,31 +94,31 @@ export function IntegrityRing({ score, size = 140 }: IntegrityRingProps) {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
   },
   svg: {
-    position: 'absolute',
+    position: "absolute",
   },
   textContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   percentage: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
     color: Colors.white,
-    fontVariant: ['tabular-nums'],
+    fontVariant: ["tabular-nums"],
   },
   percentSymbol: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.subtleText,
     marginTop: -4,
   },
   label: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neonCyan,
     letterSpacing: 2,
     marginTop: 2,

@@ -22,12 +22,6 @@ import Svg, {
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-interface LungAnnotationProps {
-  score: number; // 0-1
-  size?: number;
-  position?: "left" | "right";
-}
-
 export function SystemAnnotation({
   score,
   label,
@@ -52,6 +46,7 @@ export function SystemAnnotation({
       duration: 1500,
       easing: Easing.out(Easing.cubic),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [score]);
 
   const animatedProps = useAnimatedProps(() => ({

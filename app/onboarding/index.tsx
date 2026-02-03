@@ -12,6 +12,7 @@ export default function OnboardingIndex() {
 
   useEffect(() => {
     router.replace("/onboarding/welcome");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

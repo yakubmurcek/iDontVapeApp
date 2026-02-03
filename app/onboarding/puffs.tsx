@@ -5,6 +5,7 @@
 import { SliderInput } from "@/components/Onboarding/SliderInput";
 import { Button } from "@/components/ui/Button";
 import { Colors } from "@/constants/Colors";
+import { useOnboardingStore } from "@/store/onboardingStore";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Zap } from "lucide-react-native";
 import React, { useState } from "react";
@@ -13,6 +14,7 @@ import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 export default function PuffsStep() {
   const router = useRouter();
   const [puffs, setPuffs] = useState(100);
+  const setPuffsPerDay = useOnboardingStore((state) => state.setPuffsPerDay);
 
   const formatPuffs = (value: number): string => {
     return `${value}`;
@@ -23,10 +25,7 @@ export default function PuffsStep() {
   };
 
   const handleBeginScan = () => {
-    global.onboardingData = {
-      ...global.onboardingData,
-      puffsPerDay: puffs,
-    };
+    setPuffsPerDay(puffs);
     router.push("/onboarding/calibration");
   };
 

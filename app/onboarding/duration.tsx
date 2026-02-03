@@ -5,6 +5,7 @@
 import { SliderInput } from "@/components/Onboarding/SliderInput";
 import { Button } from "@/components/ui/Button";
 import { Colors } from "@/constants/Colors";
+import { useOnboardingStore } from "@/store/onboardingStore";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import React, { useState } from "react";
@@ -13,6 +14,9 @@ import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 export default function DurationStep() {
   const router = useRouter();
   const [months, setMonths] = useState(12);
+  const setVapingDurationMonths = useOnboardingStore(
+    (state) => state.setVapingDurationMonths,
+  );
 
   // Dynamic step: months below 2 years, full years after
   const handleMonthsChange = (value: number) => {
@@ -39,11 +43,8 @@ export default function DurationStep() {
   };
 
   const handleNext = () => {
-    // Store in a temporary location - we'll save all at calibration
-    global.onboardingData = {
-      ...global.onboardingData,
-      vapingDurationMonths: months,
-    };
+    // Store in global store
+    setVapingDurationMonths(months);
     router.push("/onboarding/nicotine");
   };
 
@@ -115,13 +116,3 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
 });
-
-// Global storage for onboarding data
-declare global {
-  var onboardingData: {
-    vapingDurationMonths?: number;
-    nicotineStrength?: number;
-    puffsPerDay?: number;
-  };
-}
-global.onboardingData = {};

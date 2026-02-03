@@ -2,107 +2,115 @@
  * CalibrationAnim - Calibration/scan effect for onboarding completion
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { Circle, Line, G } from 'react-native-svg';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  useAnimatedProps,
-  withTiming, 
-  withSequence,
-  withDelay,
-  withRepeat,
-  Easing,
-  runOnJS,
-} from 'react-native-reanimated';
-import { Colors } from '@/constants/Colors';
+import { Colors } from "@/constants/Colors";
+import React from "react";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
+import Animated, {
+    Easing,
+    useAnimatedProps,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withTiming,
+} from "react-native-reanimated";
+import Svg, { Circle, G, Line } from "react-native-svg";
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedG = Animated.createAnimatedComponent(G);
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface CalibrationAnimProps {
   damageScore: number;
   onComplete: () => void;
 }
 
-export function CalibrationAnim({ damageScore, onComplete }: CalibrationAnimProps) {
-  const [phase, setPhase] = React.useState<'scanning' | 'analyzing' | 'complete'>('scanning');
-  const [statusText, setStatusText] = React.useState('INITIALIZING SCAN...');
-  
+export function CalibrationAnim({
+  damageScore,
+  onComplete,
+}: CalibrationAnimProps) {
+  const [phase, setPhase] = React.useState<
+    "scanning" | "analyzing" | "complete"
+  >("scanning");
+  const [statusText, setStatusText] = React.useState("INITIALIZING SCAN...");
+
   const scanLineY = useSharedValue(0);
   const pulseScale = useSharedValue(1);
   const damageOpacity = useSharedValue(0);
-  
+
   React.useEffect(() => {
     // Scanning animation
     scanLineY.value = withRepeat(
       withTiming(250, { duration: 2000, easing: Easing.linear }),
       2,
-      true
+      true,
     );
-    
+
     // Pulse animation
     pulseScale.value = withRepeat(
       withSequence(
         withTiming(1.1, { duration: 500 }),
-        withTiming(1, { duration: 500 })
+        withTiming(1, { duration: 500 }),
       ),
       -1,
-      true
+      true,
     );
-    
+
     // Phase transitions
     setTimeout(() => {
-      setPhase('analyzing');
-      setStatusText('ANALYZING PULMONARY SYSTEM...');
+      setPhase("analyzing");
+      setStatusText("ANALYZING PULMONARY SYSTEM...");
     }, 2000);
-    
+
     setTimeout(() => {
-      setStatusText('MAPPING VASCULAR NETWORK...');
+      setStatusText("MAPPING VASCULAR NETWORK...");
     }, 3500);
-    
+
     setTimeout(() => {
-      setStatusText('CALCULATING DAMAGE INDEX...');
+      setStatusText("CALCULATING DAMAGE INDEX...");
       damageOpacity.value = withTiming(1, { duration: 1000 });
     }, 5000);
-    
+
     setTimeout(() => {
-      setPhase('complete');
-      setStatusText('CALIBRATION COMPLETE');
+      setPhase("complete");
+      setStatusText("CALIBRATION COMPLETE");
     }, 6500);
-    
+
     setTimeout(() => {
       onComplete();
     }, 7500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
   const scanLineStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: scanLineY.value }],
-    opacity: phase === 'scanning' ? 1 : 0,
+    opacity: phase === "scanning" ? 1 : 0,
   }));
-  
+
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
   }));
-  
+
   const damageDotsProps = useAnimatedProps(() => ({
     opacity: damageOpacity.value,
   }));
-  
+
   const damagePercentage = Math.round(damageScore * 100);
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.statusText}>{statusText}</Text>
-      
+
       <View style={styles.scanArea}>
         <Animated.View style={[styles.pulseContainer, pulseStyle]}>
           <Svg width={SCREEN_WIDTH - 60} height={250} viewBox="0 0 300 250">
             {/* Body outline */}
-            <G stroke={Colors.neonCyan} strokeWidth={1} fill="none" opacity={0.6}>
+            <G
+              stroke={Colors.neonCyan}
+              strokeWidth={1}
+              fill="none"
+              opacity={0.6}
+            >
               {/* Head */}
               <Circle cx={150} cy={30} r={20} />
               {/* Neck */}
@@ -121,9 +129,15 @@ export function CalibrationAnim({ damageScore, onComplete }: CalibrationAnimProp
               <Circle cx={120} cy={110} r={25} opacity={0.5} />
               <Circle cx={180} cy={110} r={25} opacity={0.5} />
               {/* Heart */}
-              <Circle cx={150} cy={120} r={15} stroke={Colors.criticalRed} opacity={0.5} />
+              <Circle
+                cx={150}
+                cy={120}
+                r={15}
+                stroke={Colors.criticalRed}
+                opacity={0.5}
+              />
             </G>
-            
+
             {/* Damage indicators */}
             <AnimatedG animatedProps={damageDotsProps}>
               <Circle cx={110} cy={100} r={4} fill={Colors.criticalRed} />
@@ -147,19 +161,21 @@ export function CalibrationAnim({ damageScore, onComplete }: CalibrationAnimProp
             </AnimatedG>
           </Svg>
         </Animated.View>
-        
+
         {/* Scan line */}
         <Animated.View style={[styles.scanLine, scanLineStyle]} />
       </View>
-      
-      {phase === 'complete' && (
+
+      {phase === "complete" && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultLabel}>INITIAL DAMAGE INDEX</Text>
           <Text style={styles.resultValue}>{damagePercentage}%</Text>
-          <Text style={styles.resultSubtext}>Bio-Twin calibrated. Recovery tracking initiated.</Text>
+          <Text style={styles.resultSubtext}>
+            Bio-Twin calibrated. Recovery tracking initiated.
+          </Text>
         </View>
       )}
-      
+
       {/* Decorative corners */}
       <View style={[styles.corner, styles.cornerTL]} />
       <View style={[styles.corner, styles.cornerTR]} />
@@ -173,13 +189,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.spaceCharcoal,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neonCyan,
     letterSpacing: 2,
     marginBottom: 40,
@@ -187,20 +203,20 @@ const styles = StyleSheet.create({
   scanArea: {
     width: SCREEN_WIDTH - 60,
     height: 250,
-    position: 'relative',
+    position: "relative",
     borderWidth: 1,
-    borderColor: 'rgba(0, 240, 255, 0.3)',
+    borderColor: "rgba(0, 240, 255, 0.3)",
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   pulseContainer: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   scanLine: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     height: 2,
@@ -212,27 +228,27 @@ const styles = StyleSheet.create({
   },
   resultContainer: {
     marginTop: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   resultLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.subtleText,
     letterSpacing: 2,
   },
   resultValue: {
     fontSize: 64,
-    fontWeight: '700',
+    fontWeight: "700",
     color: Colors.criticalRed,
     marginVertical: 8,
   },
   resultSubtext: {
     fontSize: 14,
     color: Colors.subtleText,
-    textAlign: 'center',
+    textAlign: "center",
   },
   corner: {
-    position: 'absolute',
+    position: "absolute",
     width: 20,
     height: 20,
     borderColor: Colors.neonCyan,

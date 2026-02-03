@@ -14,25 +14,24 @@ import { useUserStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-  Activity,
-  AlertTriangle,
-  Clock,
-  DollarSign,
-  List,
+    Activity,
+    AlertTriangle,
+    Clock,
+    DollarSign,
+    List,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 
 export default function Dashboard() {
   const router = useRouter();
-  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Subscribe to user store
   const initialDamageScore = useUserStore((state) => state.initialDamageScore);
@@ -48,10 +47,10 @@ export default function Dashboard() {
   const getLungRecovery = useUserStore((state) => state.getLungRecovery);
   const getHeartRecovery = useUserStore((state) => state.getHeartRecovery);
 
-  // Update time every second
+  // Update time every second to trigger re-render
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(Date.now());
+      // Force re-render to update computed values
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -64,7 +63,6 @@ export default function Dashboard() {
   const hoursSinceQuit = getHoursSinceQuit();
   const lungRecovery = getLungRecovery();
   const heartRecovery = getHeartRecovery();
-  const damageLevel = 1 - systemIntegrity;
 
   const handleReset = () => {
     Alert.alert(

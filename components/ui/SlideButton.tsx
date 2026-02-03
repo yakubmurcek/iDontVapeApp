@@ -71,6 +71,7 @@ export function SlideButton({
     };
 
     runAnimations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pan = Gesture.Pan()

@@ -46,6 +46,7 @@ export default function WelcomeStep() {
       -1,
       true,
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedHeartStyle = useAnimatedStyle(() => ({
@@ -132,7 +133,7 @@ export default function WelcomeStep() {
               {typingStep >= 3 && (
                 <Animated.View entering={FadeIn.duration(800)}>
                   <Text style={styles.messageHighlight}>
-                    We'll quit together.
+                    We&apos;ll quit together.
                   </Text>
                   <Text style={styles.signature}>– Yakub</Text>
                 </Animated.View>

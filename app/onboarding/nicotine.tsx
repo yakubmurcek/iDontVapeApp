@@ -5,6 +5,7 @@
 import { SliderInput } from "@/components/Onboarding/SliderInput";
 import { Button } from "@/components/ui/Button";
 import { Colors } from "@/constants/Colors";
+import { useOnboardingStore } from "@/store/onboardingStore";
 import { useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import React, { useState } from "react";
@@ -13,6 +14,9 @@ import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 export default function NicotineStep() {
   const router = useRouter();
   const [strength, setStrength] = useState(20);
+  const setNicotineStrength = useOnboardingStore(
+    (state) => state.setNicotineStrength,
+  );
 
   const formatStrength = (value: number): string => {
     return `${value}mg`;
@@ -23,10 +27,7 @@ export default function NicotineStep() {
   };
 
   const handleNext = () => {
-    global.onboardingData = {
-      ...global.onboardingData,
-      nicotineStrength: strength,
-    };
+    setNicotineStrength(strength);
     router.push("/onboarding/puffs");
   };
 

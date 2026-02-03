@@ -115,6 +115,7 @@ export function SliderInput({
     translateX.value = withSpring(newProgress * (SLIDER_WIDTH - THUMB_SIZE), {
       damping: 20,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, min, max, scale, customValueToPosition]);
 
   const updateValue = (x: number) => {
