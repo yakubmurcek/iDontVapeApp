@@ -5,13 +5,13 @@
 import { ColorRGB, Colors } from "@/constants/Colors";
 import React from "react";
 import Animated, {
-    Easing,
-    useAnimatedProps,
-    useSharedValue,
-    withDelay,
-    withRepeat,
-    withSequence,
-    withTiming,
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from "react-native-reanimated";
 import Svg, { Circle, G, Path } from "react-native-svg";
 
@@ -76,12 +76,18 @@ export function Heart({
   }, []);
 
   const animatedProps = useAnimatedProps(() => ({
-    transform: [{ scale: heartbeatScale.value }],
+    transform: [
+      { translateX: 40 },
+      { translateY: 40 },
+      { scale: heartbeatScale.value },
+      { translateX: -40 },
+      { translateY: -40 },
+    ],
   }));
 
   return (
     <Svg width={width} height={height} viewBox="0 0 80 80">
-      <AnimatedG animatedProps={animatedProps} origin="40, 40">
+      <AnimatedG animatedProps={animatedProps}>
         {/* Heart outline */}
         <Path
           d="M40 70

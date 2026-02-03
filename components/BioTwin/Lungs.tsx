@@ -52,7 +52,7 @@ export function Lungs({
   React.useEffect(() => {
     breatheScale.value = withRepeat(
       withSequence(
-        withTiming(1.03, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.07, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
         withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
@@ -62,12 +62,18 @@ export function Lungs({
   }, []);
 
   const animatedProps = useAnimatedProps(() => ({
-    transform: [{ scale: breatheScale.value }],
+    transform: [
+      { translateX: 100 },
+      { translateY: 90 },
+      { scale: breatheScale.value },
+      { translateX: -100 },
+      { translateY: -90 },
+    ],
   }));
 
   return (
     <Svg width={width} height={height} viewBox="0 0 200 180">
-      <AnimatedG animatedProps={animatedProps} origin="100, 90">
+      <AnimatedG animatedProps={animatedProps}>
         {/* Trachea */}
         <Path
           d="M100 10 L100 50"
