@@ -9,8 +9,17 @@ import {
     getMilestoneProgress,
     getMilestonesByOrgan,
     getSortedMilestones,
-    isMilestoneAchieved
+    isMilestoneAchieved,
 } from "@/constants/milestones";
+
+// Recovery time constants (in hours)
+const HOURS_PER_MONTH = 720;
+const MAX_RECOVERY_HOURS = 8760; // 1 year for "full" recovery display
+const ORGAN_RECOVERY_HOURS: Record<OrganType, number> = {
+  heart: 2160, // 3 months for significant cardiac benefits
+  lungs: 8760, // 1 year for full lung tissue recovery
+  bloodVessels: 4320, // 6 months for circulation restoration
+};
 
 /**
  * Calculate initial damage score based on vaping history
@@ -54,18 +63,17 @@ export function calculateSystemIntegrity(
   initialDamage: number,
   hoursSinceQuit: number,
 ): number {
-  const maxRecoveryHours = 8760; // 1 year for "full" recovery display
-
+  // Calculate recovery progress (0-1)
   // Calculate recovery progress (0-1)
   let recoveryProgress: number;
   if (hoursSinceQuit <= 0) {
     recoveryProgress = 0;
-  } else if (hoursSinceQuit >= maxRecoveryHours) {
+  } else if (hoursSinceQuit >= MAX_RECOVERY_HOURS) {
     recoveryProgress = 1.0;
   } else {
     // Logarithmic curve for realistic recovery feel
     recoveryProgress =
-      Math.log(hoursSinceQuit + 1) / Math.log(maxRecoveryHours + 1);
+      Math.log(hoursSinceQuit + 1) / Math.log(MAX_RECOVERY_HOURS + 1);
   }
 
   // Current damage = initial damage reduced by recovery progress
@@ -129,17 +137,7 @@ export function calculateOrganRecovery(
     return 1 - initialDamage;
   }
 
-  // Organ-specific max recovery hours
-  // Heart: faster recovery - most benefits within weeks
-  // Lungs: slower recovery - tissue repair takes months
-  // Blood vessels: moderate - circulation improves over time
-  const organMaxRecoveryHours: Record<OrganType, number> = {
-    heart: 2160, // 3 months for significant cardiac benefits
-    lungs: 8760, // 1 year for full lung tissue recovery
-    bloodVessels: 4320, // 6 months for circulation restoration
-  };
-
-  const maxHours = organMaxRecoveryHours[organ];
+  const maxHours = ORGAN_RECOVERY_HOURS[organ];
 
   // Calculate progress based on organ milestones achieved
   const achievedMilestones = organMilestones.filter((m) =>

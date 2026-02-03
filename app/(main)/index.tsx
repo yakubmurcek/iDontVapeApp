@@ -15,20 +15,20 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { usePlacement } from "expo-superwall";
 import {
-    Activity,
-    AlertTriangle,
-    Clock,
-    DollarSign,
-    List,
+  Activity,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+  List,
 } from "lucide-react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 export default function Dashboard() {
@@ -43,7 +43,6 @@ export default function Dashboard() {
   });
 
   // Subscribe to user store
-  const initialDamageScore = useUserStore((state) => state.initialDamageScore);
   const getFormattedTimeSinceQuit = useUserStore(
     (state) => state.getFormattedTimeSinceQuit,
   );
@@ -65,11 +64,10 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update time every second to trigger re-render
+  // Force re-render every second to update time-based computed values
+  const [, setTick] = useState(0);
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Force re-render to update computed values
-    }, 1000);
+    const interval = setInterval(() => setTick((t: number) => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -121,11 +119,7 @@ export default function Dashboard() {
 
         {/* Bio-Twin Scene */}
         <View style={styles.bioTwinContainer}>
-          <BioTwinScene
-            damageLevel={initialDamageScore}
-            recoveryProgress={systemIntegrity}
-            height={320}
-          />
+          <BioTwinScene recoveryProgress={systemIntegrity} height={320} />
 
           {/* Lung Recovery Annotation */}
           <SystemAnnotation

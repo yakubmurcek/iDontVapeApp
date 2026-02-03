@@ -5,18 +5,17 @@
 import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withTiming,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
 } from "react-native-reanimated";
 import { BloodVessels } from "./BloodVessels";
 import { Heart } from "./Heart";
 import { Lungs } from "./Lungs";
 
 interface BioTwinSceneProps {
-  damageLevel: number; // 0-1 (for initial display)
   recoveryProgress: number; // 0-1
   height?: number;
 }
@@ -24,7 +23,6 @@ interface BioTwinSceneProps {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export function BioTwinScene({
-  damageLevel,
   recoveryProgress,
   height = 350,
 }: BioTwinSceneProps) {

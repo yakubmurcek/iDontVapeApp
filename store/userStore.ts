@@ -3,30 +3,17 @@
  */
 
 import { OrganType } from "@/constants/milestones";
+import { asyncStorageAdapter } from "@/utils/asyncStorageAdapter";
 import {
-  calculateInitialDamage,
-  calculateOrganRecovery,
-  calculateSystemIntegrity,
-  formatTimeSinceQuit,
-  getCurrentMilestoneProgress,
-  MilestoneProgress,
+    calculateInitialDamage,
+    calculateOrganRecovery,
+    calculateSystemIntegrity,
+    formatTimeSinceQuit,
+    getCurrentMilestoneProgress,
+    MilestoneProgress,
 } from "@/utils/recoveryCalculator";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
-import { createJSONStorage, persist, StateStorage } from "zustand/middleware";
-
-// AsyncStorage adapter
-const asyncStorageAdapter: StateStorage = {
-  setItem: async (name, value) => {
-    await AsyncStorage.setItem(name, value);
-  },
-  getItem: async (name) => {
-    return await AsyncStorage.getItem(name);
-  },
-  removeItem: async (name) => {
-    await AsyncStorage.removeItem(name);
-  },
-};
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface OnboardingData {
   vapingDurationMonths: number;
