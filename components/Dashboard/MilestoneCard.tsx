@@ -2,27 +2,33 @@
  * MilestoneCard - Displays next milestone with progress
  */
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Check } from 'lucide-react-native';
-import { Colors } from '@/constants/Colors';
-import { RecoveryMilestone, formatTimeRemaining } from '@/constants/milestones';
-import { Card } from '@/components/ui/Card';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import { Check } from 'lucide-react-native'
+import { Colors } from '@/constants/Colors'
+import { RecoveryMilestone, formatTimeRemaining } from '@/constants/milestones'
+import { Card } from '@/components/ui/Card'
+import { LinearGradient } from 'expo-linear-gradient'
 
 interface MilestoneCardProps {
-  nextMilestone: RecoveryMilestone | null;
-  progress: number; // 0-1
-  hoursSinceQuit: number;
+  nextMilestone: RecoveryMilestone | null
+  progress: number // 0-1
+  hoursSinceQuit: number
 }
 
 export function MilestoneCard({ nextMilestone, progress, hoursSinceQuit }: MilestoneCardProps) {
   if (!nextMilestone) {
     return (
-      <Card borderColor="rgba(0, 255, 136, 0.3)" style={styles.completedCard}>
+      <Card
+        borderColor="rgba(0, 255, 136, 0.3)"
+        style={styles.completedCard}
+      >
         <View style={styles.completedContent}>
           <View style={styles.checkIcon}>
-            <Check size={24} color={Colors.healthGreen} />
+            <Check
+              size={24}
+              color={Colors.healthGreen}
+            />
           </View>
           <View style={styles.completedText}>
             <Text style={styles.completedTitle}>ALL MILESTONES ACHIEVED</Text>
@@ -30,12 +36,12 @@ export function MilestoneCard({ nextMilestone, progress, hoursSinceQuit }: Miles
           </View>
         </View>
       </Card>
-    );
+    )
   }
-  
-  const hoursRemaining = nextMilestone.hoursRequired - hoursSinceQuit;
-  const timeRemaining = formatTimeRemaining(hoursRemaining);
-  
+
+  const hoursRemaining = nextMilestone.hoursRequired - hoursSinceQuit
+  const timeRemaining = formatTimeRemaining(hoursRemaining)
+
   return (
     <Card borderColor="rgba(0, 240, 255, 0.2)">
       <View style={styles.header}>
@@ -48,7 +54,7 @@ export function MilestoneCard({ nextMilestone, progress, hoursSinceQuit }: Miles
           <Text style={styles.etaValue}>{timeRemaining || 'Soon'}</Text>
         </View>
       </View>
-      
+
       {/* Progress bar */}
       <View style={styles.progressContainer}>
         <View style={styles.progressBackground}>
@@ -61,7 +67,7 @@ export function MilestoneCard({ nextMilestone, progress, hoursSinceQuit }: Miles
         </View>
       </View>
     </Card>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -128,4 +134,4 @@ const styles = StyleSheet.create({
     color: Colors.white,
     marginTop: 2,
   },
-});
+})

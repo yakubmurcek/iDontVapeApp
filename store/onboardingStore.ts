@@ -1,13 +1,13 @@
-import { create } from "zustand";
+import { create } from 'zustand'
 
 interface OnboardingState {
-  vapingDurationMonths: number;
-  nicotineStrength: number;
-  puffsPerDay: number;
-  setVapingDurationMonths: (months: number) => void;
-  setNicotineStrength: (strength: number) => void;
-  setPuffsPerDay: (puffs: number) => void;
-  reset: () => void;
+  vapingDurationMonths: number
+  nicotineStrength: number
+  puffsPerDay: number
+  setVapingDurationMonths: (months: number) => void
+  setNicotineStrength: (strength: number) => void
+  setPuffsPerDay: (puffs: number) => void
+  reset: () => void
 }
 
 export const useOnboardingStore = create<OnboardingState>((set) => ({
@@ -25,4 +25,4 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
       nicotineStrength: 20,
       puffsPerDay: 100,
     }),
-}));
+}))

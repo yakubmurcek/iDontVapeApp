@@ -2,70 +2,63 @@
  * Welcome Step - Personal message from the founder
  */
 
-import { GlowText } from "@/components/ui/GlowText";
-import { SlideButton } from "@/components/ui/SlideButton";
-import { TypewriterText } from "@/components/ui/TypewriterText";
-import { Colors } from "@/constants/Colors";
-import { useRouter } from "expo-router";
-import { Heart } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
-import {
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { GlowText } from '@/components/ui/GlowText'
+import { SlideButton } from '@/components/ui/SlideButton'
+import { TypewriterText } from '@/components/ui/TypewriterText'
+import { Colors } from '@/constants/Colors'
+import { useRouter } from 'expo-router'
+import { Heart } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, {
-    Easing,
-    FadeIn,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withTiming,
-} from "react-native-reanimated";
+  Easing,
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated'
 
 export default function WelcomeStep() {
-  const router = useRouter();
-  const [typingStep, setTypingStep] = useState(0);
-  const [skipStep, setSkipStep] = useState<number | null>(null);
+  const router = useRouter()
+  const [typingStep, setTypingStep] = useState(0)
+  const [skipStep, setSkipStep] = useState<number | null>(null)
 
   const handleTapToSkip = () => {
     // Only skip the currently animating step (typingStep indicates which paragraph is active)
     if (typingStep < 3) {
-      setSkipStep(typingStep);
+      setSkipStep(typingStep)
     }
-  };
+  }
 
-  const scale = useSharedValue(1);
+  const scale = useSharedValue(1)
 
   useEffect(() => {
     scale.value = withRepeat(
       withTiming(1.18, { duration: 1300, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
-    );
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const animatedHeartStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-  }));
+  }))
 
   const handleNext = () => {
-    router.replace("/onboarding/duration");
-  };
+    router.replace('/onboarding/duration')
+  }
 
   const advanceStep = (nextStep: number, delay: number = 0) => {
     if (delay === 0) {
-      setTypingStep(nextStep);
+      setTypingStep(nextStep)
     } else {
       setTimeout(() => {
-        setTypingStep(nextStep);
-      }, delay);
+        setTypingStep(nextStep)
+      }, delay)
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -132,9 +125,7 @@ export default function WelcomeStep() {
 
               {typingStep >= 3 && (
                 <Animated.View entering={FadeIn.duration(800)}>
-                  <Text style={styles.messageHighlight}>
-                    We&apos;ll quit together.
-                  </Text>
+                  <Text style={styles.messageHighlight}>We&apos;ll quit together.</Text>
                   <Text style={styles.signature}>– Yakub</Text>
                 </Animated.View>
               )}
@@ -147,12 +138,15 @@ export default function WelcomeStep() {
       <View style={[styles.navigation, { opacity: typingStep >= 3 ? 1 : 0 }]}>
         {typingStep >= 3 && (
           <Animated.View entering={FadeIn.duration(500).delay(200)}>
-            <SlideButton onComplete={handleNext} text="Slide to Begin" />
+            <SlideButton
+              onComplete={handleNext}
+              text="Slide to Begin"
+            />
           </Animated.View>
         )}
       </View>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -174,7 +168,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   header: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 40,
   },
   heartContainer: {
@@ -185,17 +179,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: "rgba(0, 240, 255, 0.2)",
+    borderColor: 'rgba(0, 240, 255, 0.2)',
     minHeight: 400, // Prevent layout jump
   },
   messageTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.neonCyan,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
   },
   messageText: {
     fontSize: 16,
@@ -211,26 +205,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 28,
     color: Colors.healthGreen,
-    fontWeight: "600",
+    fontWeight: '600',
     marginTop: 24,
     marginBottom: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
   signature: {
     fontSize: 16,
     color: Colors.subtleText,
-    fontStyle: "italic",
-    textAlign: "right",
+    fontStyle: 'italic',
+    textAlign: 'right',
     marginTop: 8,
   },
   navigation: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 40,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 24,
   },
-});
+})

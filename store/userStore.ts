@@ -2,54 +2,54 @@
  * User Store - Main state for user profile and recovery tracking
  */
 
-import { OrganType } from "@/constants/milestones";
-import { asyncStorageAdapter } from "@/utils/asyncStorageAdapter";
+import { OrganType } from '@/constants/milestones'
+import { asyncStorageAdapter } from '@/utils/asyncStorageAdapter'
 import {
-    calculateInitialDamage,
-    calculateOrganRecovery,
-    calculateSystemIntegrity,
-    formatTimeSinceQuit,
-    getCurrentMilestoneProgress,
-    MilestoneProgress,
-} from "@/utils/recoveryCalculator";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+  calculateInitialDamage,
+  calculateOrganRecovery,
+  calculateSystemIntegrity,
+  formatTimeSinceQuit,
+  getCurrentMilestoneProgress,
+  MilestoneProgress,
+} from '@/utils/recoveryCalculator'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 
 export interface OnboardingData {
-  vapingDurationMonths: number;
-  nicotineStrength: number;
-  puffsPerDay: number;
+  vapingDurationMonths: number
+  nicotineStrength: number
+  puffsPerDay: number
 }
 
 interface UserState {
   // Profile data
-  vapingDurationMonths: number;
-  nicotineStrength: number;
-  puffsPerDay: number;
-  quitDate: string | null; // ISO string
-  lastVapeDate: string | null; // ISO string
-  initialDamageScore: number;
-  hasCompletedOnboarding: boolean;
-  costPerPuff: number;
+  vapingDurationMonths: number
+  nicotineStrength: number
+  puffsPerDay: number
+  quitDate: string | null // ISO string
+  lastVapeDate: string | null // ISO string
+  initialDamageScore: number
+  hasCompletedOnboarding: boolean
+  costPerPuff: number
 
   // Actions
-  completeOnboarding: (data: OnboardingData) => void;
-  recordRelapse: () => void;
-  resetProgress: () => void;
-  clearData: () => void;
+  completeOnboarding: (data: OnboardingData) => void
+  recordRelapse: () => void
+  resetProgress: () => void
+  clearData: () => void
 
   // Computed (called as functions since Zustand doesn't have native getters)
-  getRecoveryStartDate: () => Date;
-  getTimeSinceQuit: () => number;
-  getHoursSinceQuit: () => number;
-  getDaysSinceQuit: () => number;
-  getMoneySaved: () => number;
-  getFormattedTimeSinceQuit: () => string;
-  getSystemIntegrity: () => number;
-  getOrganRecovery: (organ: OrganType) => number;
-  getLungRecovery: () => number;
-  getHeartRecovery: () => number;
-  getCurrentMilestone: () => MilestoneProgress;
+  getRecoveryStartDate: () => Date
+  getTimeSinceQuit: () => number
+  getHoursSinceQuit: () => number
+  getDaysSinceQuit: () => number
+  getMoneySaved: () => number
+  getFormattedTimeSinceQuit: () => string
+  getSystemIntegrity: () => number
+  getOrganRecovery: (organ: OrganType) => number
+  getLungRecovery: () => number
+  getHeartRecovery: () => number
+  getCurrentMilestone: () => MilestoneProgress
 }
 
 export const useUserStore = create<UserState>()(
@@ -71,7 +71,7 @@ export const useUserStore = create<UserState>()(
           data.vapingDurationMonths,
           data.nicotineStrength,
           data.puffsPerDay,
-        );
+        )
 
         set({
           vapingDurationMonths: data.vapingDurationMonths,
@@ -81,18 +81,18 @@ export const useUserStore = create<UserState>()(
           lastVapeDate: null,
           initialDamageScore: damageScore,
           hasCompletedOnboarding: true,
-        });
+        })
       },
 
       recordRelapse: () => {
-        set({ lastVapeDate: new Date().toISOString() });
+        set({ lastVapeDate: new Date().toISOString() })
       },
 
       resetProgress: () => {
         set({
           quitDate: new Date().toISOString(),
           lastVapeDate: null,
-        });
+        })
       },
 
       clearData: () => {
@@ -105,71 +105,64 @@ export const useUserStore = create<UserState>()(
           initialDamageScore: 0.5,
           hasCompletedOnboarding: false,
           costPerPuff: 0.02,
-        });
+        })
       },
 
       // Computed
       getRecoveryStartDate: () => {
-        const state = get();
-        const dateStr = state.lastVapeDate ?? state.quitDate;
-        return dateStr ? new Date(dateStr) : new Date();
+        const state = get()
+        const dateStr = state.lastVapeDate ?? state.quitDate
+        return dateStr ? new Date(dateStr) : new Date()
       },
 
       getTimeSinceQuit: () => {
-        const recoveryStart = get().getRecoveryStartDate();
-        return Date.now() - recoveryStart.getTime();
+        const recoveryStart = get().getRecoveryStartDate()
+        return Date.now() - recoveryStart.getTime()
       },
 
       getHoursSinceQuit: () => {
-        return get().getTimeSinceQuit() / (1000 * 60 * 60);
+        return get().getTimeSinceQuit() / (1000 * 60 * 60)
       },
 
       getDaysSinceQuit: () => {
-        return Math.floor(get().getTimeSinceQuit() / (1000 * 60 * 60 * 24));
+        return Math.floor(get().getTimeSinceQuit() / (1000 * 60 * 60 * 24))
       },
 
       getMoneySaved: () => {
-        const state = get();
-        const puffsAvoided = state.getDaysSinceQuit() * state.puffsPerDay;
-        return puffsAvoided * state.costPerPuff;
+        const state = get()
+        const puffsAvoided = state.getDaysSinceQuit() * state.puffsPerDay
+        return puffsAvoided * state.costPerPuff
       },
 
       getFormattedTimeSinceQuit: () => {
-        return formatTimeSinceQuit(get().getTimeSinceQuit());
+        return formatTimeSinceQuit(get().getTimeSinceQuit())
       },
 
       getSystemIntegrity: () => {
-        const state = get();
-        return calculateSystemIntegrity(
-          state.initialDamageScore,
-          state.getHoursSinceQuit(),
-        );
+        const state = get()
+        return calculateSystemIntegrity(state.initialDamageScore, state.getHoursSinceQuit())
       },
 
       getOrganRecovery: (organ: OrganType) => {
-        const state = get();
-        return calculateOrganRecovery(
-          organ,
-          state.initialDamageScore,
-          state.getHoursSinceQuit(),
-        );
+        const state = get()
+        return calculateOrganRecovery(organ, state.initialDamageScore, state.getHoursSinceQuit())
       },
 
       getLungRecovery: () => {
-        return get().getOrganRecovery("lungs");
+        return get().getOrganRecovery('lungs')
       },
 
       getHeartRecovery: () => {
-        return get().getOrganRecovery("heart");
+        return get().getOrganRecovery('heart')
       },
 
       getCurrentMilestone: () => {
-        return getCurrentMilestoneProgress(get().getHoursSinceQuit());
+        return getCurrentMilestoneProgress(get().getHoursSinceQuit())
       },
     }),
     {
-      name: "user-profile",
+      name: 'user-profile',
       storage: createJSONStorage(() => asyncStorageAdapter),
     },
   ),
-);
+)

@@ -2,28 +2,29 @@
  * StatCard - Stats display with icon
  */
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '@/constants/Colors';
-import { Card } from '@/components/ui/Card';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import { Colors } from '@/constants/Colors'
+import { Card } from '@/components/ui/Card'
 
 interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color?: string;
+  icon: React.ReactNode
+  label: string
+  value: string
+  color?: string
 }
 
 export function StatCard({ icon, label, value, color = Colors.neonCyan }: StatCardProps) {
   return (
-    <Card borderColor={`${color}20`} style={styles.card}>
-      <View style={[styles.iconContainer, { backgroundColor: `${color}15` }]}>
-        {icon}
-      </View>
+    <Card
+      borderColor={`${color}20`}
+      style={styles.card}
+    >
+      <View style={[styles.iconContainer, { backgroundColor: `${color}15` }]}>{icon}</View>
       <Text style={styles.value}>{value}</Text>
       <Text style={styles.label}>{label}</Text>
     </Card>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -53,4 +54,4 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textAlign: 'center',
   },
-});
+})

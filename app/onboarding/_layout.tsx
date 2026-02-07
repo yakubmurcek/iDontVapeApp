@@ -2,24 +2,24 @@
  * Onboarding Layout - Stack navigator for onboarding flow
  */
 
-import { ProgressDots } from "@/components/Onboarding/ProgressDots";
-import { GlowText } from "@/components/ui/GlowText";
-import { Colors } from "@/constants/Colors";
-import { Stack, usePathname } from "expo-router";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { ProgressDots } from '@/components/Onboarding/ProgressDots'
+import { GlowText } from '@/components/ui/GlowText'
+import { Colors } from '@/constants/Colors'
+import { Stack, usePathname } from 'expo-router'
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
 
 export default function OnboardingLayout() {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   // Map routes to step indices
   const stepMap: Record<string, number> = {
-    "/onboarding/duration": 0,
-    "/onboarding/nicotine": 1,
-    "/onboarding/puffs": 2,
-  };
+    '/onboarding/duration': 0,
+    '/onboarding/nicotine': 1,
+    '/onboarding/puffs': 2,
+  }
 
-  const currentStep = stepMap[pathname];
-  const showHeader = currentStep !== undefined;
+  const currentStep = stepMap[pathname]
+  const showHeader = currentStep !== undefined
 
   return (
     <View style={styles.container}>
@@ -31,7 +31,10 @@ export default function OnboardingLayout() {
               <Text style={styles.title}>Bio-Twin Calibration</Text>
             </View>
             <View style={styles.dotsContainer}>
-              <ProgressDots totalSteps={3} currentStep={currentStep} />
+              <ProgressDots
+                totalSteps={3}
+                currentStep={currentStep}
+              />
             </View>
           </View>
         </SafeAreaView>
@@ -41,8 +44,8 @@ export default function OnboardingLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: "transparent" },
-            animation: "slide_from_right",
+            contentStyle: { backgroundColor: 'transparent' },
+            animation: 'slide_from_right',
           }}
         >
           <Stack.Screen name="index" />
@@ -53,14 +56,14 @@ export default function OnboardingLayout() {
           <Stack.Screen
             name="calibration"
             options={{
-              animation: "fade",
+              animation: 'fade',
               gestureEnabled: false,
             }}
           />
         </Stack>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -73,17 +76,17 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerContent: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 20,
   },
   headerText: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 24,
   },
   title: {
     fontSize: 24,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.white,
     marginTop: 8,
   },
@@ -93,4 +96,4 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
   },
-});
+})

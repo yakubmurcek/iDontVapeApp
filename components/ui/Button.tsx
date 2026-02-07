@@ -2,28 +2,28 @@
  * Button - Primary and secondary button variants
  */
 
-import React from 'react';
-import { 
-  TouchableOpacity, 
-  Text, 
-  StyleSheet, 
+import React from 'react'
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
   ViewStyle,
   TextStyle,
   ActivityIndicator,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '@/constants/Colors';
+} from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Colors } from '@/constants/Colors'
 
 interface ButtonProps {
-  title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
-  icon?: React.ReactNode;
-  loading?: boolean;
-  disabled?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
-  fullWidth?: boolean;
+  title: string
+  onPress: () => void
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+  icon?: React.ReactNode
+  loading?: boolean
+  disabled?: boolean
+  style?: ViewStyle
+  textStyle?: TextStyle
+  fullWidth?: boolean
 }
 
 export function Button({
@@ -37,34 +37,36 @@ export function Button({
   textStyle,
   fullWidth = false,
 }: ButtonProps) {
-  const isDisabled = disabled || loading;
-  
+  const isDisabled = disabled || loading
+
   const content = (
     <>
       {loading ? (
-        <ActivityIndicator 
-          size="small" 
-          color={variant === 'primary' ? '#000' : Colors.white} 
+        <ActivityIndicator
+          size="small"
+          color={variant === 'primary' ? '#000' : Colors.white}
         />
       ) : (
         <>
           {icon}
-          <Text style={[
-            styles.text,
-            variant === 'primary' && styles.primaryText,
-            variant === 'secondary' && styles.secondaryText,
-            variant === 'danger' && styles.dangerText,
-            variant === 'ghost' && styles.ghostText,
-            icon ? styles.textWithIcon : undefined,
-            textStyle,
-          ]}>
+          <Text
+            style={[
+              styles.text,
+              variant === 'primary' && styles.primaryText,
+              variant === 'secondary' && styles.secondaryText,
+              variant === 'danger' && styles.dangerText,
+              variant === 'ghost' && styles.ghostText,
+              icon ? styles.textWithIcon : undefined,
+              textStyle,
+            ]}
+          >
             {title}
           </Text>
         </>
       )}
     </>
-  );
-  
+  )
+
   if (variant === 'primary') {
     return (
       <TouchableOpacity
@@ -87,9 +89,9 @@ export function Button({
           {content}
         </LinearGradient>
       </TouchableOpacity>
-    );
+    )
   }
-  
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -107,7 +109,7 @@ export function Button({
     >
       {content}
     </TouchableOpacity>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -164,4 +166,4 @@ const styles = StyleSheet.create({
   fullWidth: {
     width: '100%',
   },
-});
+})

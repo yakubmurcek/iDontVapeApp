@@ -4,22 +4,22 @@
  */
 
 import {
-    OrganType,
-    RecoveryMilestone,
-    getMilestoneProgress,
-    getMilestonesByOrgan,
-    getSortedMilestones,
-    isMilestoneAchieved,
-} from "@/constants/milestones";
+  OrganType,
+  RecoveryMilestone,
+  getMilestoneProgress,
+  getMilestonesByOrgan,
+  getSortedMilestones,
+  isMilestoneAchieved,
+} from '@/constants/milestones'
 
 // Recovery time constants (in hours)
-const HOURS_PER_MONTH = 720;
-const MAX_RECOVERY_HOURS = 8760; // 1 year for "full" recovery display
+const HOURS_PER_MONTH = 720
+const MAX_RECOVERY_HOURS = 8760 // 1 year for "full" recovery display
 const ORGAN_RECOVERY_HOURS: Record<OrganType, number> = {
   heart: 2160, // 3 months for significant cardiac benefits
   lungs: 8760, // 1 year for full lung tissue recovery
   bloodVessels: 4320, // 6 months for circulation restoration
-};
+}
 
 /**
  * Calculate initial damage score based on vaping history
@@ -33,91 +33,82 @@ export function calculateInitialDamage(
   // Normalize each factor to 0-1 range
 
   // Duration: 0-120 months (10 years) maps to 0-1
-  const durationFactor = Math.min(vapingDurationMonths / 120.0, 1.0);
+  const durationFactor = Math.min(vapingDurationMonths / 120.0, 1.0)
 
   // Nicotine: 0-50mg maps to 0-1
-  const nicotineFactor = Math.min(nicotineStrength / 50.0, 1.0);
+  const nicotineFactor = Math.min(nicotineStrength / 50.0, 1.0)
 
   // Puffs: 0-500 puffs/day maps to 0-1
-  const puffsFactor = Math.min(puffsPerDay / 500.0, 1.0);
+  const puffsFactor = Math.min(puffsPerDay / 500.0, 1.0)
 
   // Weighted combination
   // Duration has highest weight (long-term damage accumulates)
   // Puffs second (daily exposure)
   // Nicotine third (concentration)
-  const weightedScore =
-    durationFactor * 0.4 + puffsFactor * 0.35 + nicotineFactor * 0.25;
+  const weightedScore = durationFactor * 0.4 + puffsFactor * 0.35 + nicotineFactor * 0.25
 
   // Apply a curve to make moderate usage still show significant damage
-  const curvedScore = Math.pow(weightedScore, 0.7);
+  const curvedScore = Math.pow(weightedScore, 0.7)
 
   // Ensure minimum damage of 15% and maximum of 85%
-  return Math.max(0.15, Math.min(0.85, curvedScore));
+  return Math.max(0.15, Math.min(0.85, curvedScore))
 }
 
 /**
  * Calculate current system integrity score
  * @returns Value from 0.0 (just started) to 1.0 (fully recovered)
  */
-export function calculateSystemIntegrity(
-  initialDamage: number,
-  hoursSinceQuit: number,
-): number {
+export function calculateSystemIntegrity(initialDamage: number, hoursSinceQuit: number): number {
   // Calculate recovery progress (0-1)
   // Calculate recovery progress (0-1)
-  let recoveryProgress: number;
+  let recoveryProgress: number
   if (hoursSinceQuit <= 0) {
-    recoveryProgress = 0;
+    recoveryProgress = 0
   } else if (hoursSinceQuit >= MAX_RECOVERY_HOURS) {
-    recoveryProgress = 1.0;
+    recoveryProgress = 1.0
   } else {
     // Logarithmic curve for realistic recovery feel
-    recoveryProgress =
-      Math.log(hoursSinceQuit + 1) / Math.log(MAX_RECOVERY_HOURS + 1);
+    recoveryProgress = Math.log(hoursSinceQuit + 1) / Math.log(MAX_RECOVERY_HOURS + 1)
   }
 
   // Current damage = initial damage reduced by recovery progress
   // Recovery can repair up to 80% of the damage over time
-  const maxRecoverable = initialDamage * 0.8;
-  const currentDamage = initialDamage - maxRecoverable * recoveryProgress;
+  const maxRecoverable = initialDamage * 0.8
+  const currentDamage = initialDamage - maxRecoverable * recoveryProgress
 
   // System integrity is inverse of damage
-  const integrity = 1.0 - currentDamage;
+  const integrity = 1.0 - currentDamage
 
-  return Math.min(1.0, Math.max(0.0, integrity));
+  return Math.min(1.0, Math.max(0.0, integrity))
 }
 
 export interface MilestoneProgress {
-  current: RecoveryMilestone | null;
-  next: RecoveryMilestone | null;
-  progress: number;
+  current: RecoveryMilestone | null
+  next: RecoveryMilestone | null
+  progress: number
 }
 
 /**
  * Get the current and next milestone based on hours since quit
  */
-export function getCurrentMilestoneProgress(
-  hoursSinceQuit: number,
-): MilestoneProgress {
-  const sortedMilestones = getSortedMilestones();
+export function getCurrentMilestoneProgress(hoursSinceQuit: number): MilestoneProgress {
+  const sortedMilestones = getSortedMilestones()
 
-  let currentMilestone: RecoveryMilestone | null = null;
-  let nextMilestone: RecoveryMilestone | null = null;
+  let currentMilestone: RecoveryMilestone | null = null
+  let nextMilestone: RecoveryMilestone | null = null
 
   for (const milestone of sortedMilestones) {
     if (isMilestoneAchieved(milestone, hoursSinceQuit)) {
-      currentMilestone = milestone;
+      currentMilestone = milestone
     } else {
-      nextMilestone = milestone;
-      break;
+      nextMilestone = milestone
+      break
     }
   }
 
-  const progress = nextMilestone
-    ? getMilestoneProgress(nextMilestone, hoursSinceQuit)
-    : 1.0;
+  const progress = nextMilestone ? getMilestoneProgress(nextMilestone, hoursSinceQuit) : 1.0
 
-  return { current: currentMilestone, next: nextMilestone, progress };
+  return { current: currentMilestone, next: nextMilestone, progress }
 }
 
 /**
@@ -131,49 +122,45 @@ export function calculateOrganRecovery(
   initialDamage: number,
   hoursSinceQuit: number,
 ): number {
-  const organMilestones = getMilestonesByOrgan(organ);
+  const organMilestones = getMilestonesByOrgan(organ)
 
   if (organMilestones.length === 0) {
-    return 1 - initialDamage;
+    return 1 - initialDamage
   }
 
-  const maxHours = ORGAN_RECOVERY_HOURS[organ];
+  const maxHours = ORGAN_RECOVERY_HOURS[organ]
 
   // Calculate progress based on organ milestones achieved
-  const achievedMilestones = organMilestones.filter((m) =>
-    isMilestoneAchieved(m, hoursSinceQuit),
-  );
+  const achievedMilestones = organMilestones.filter((m) => isMilestoneAchieved(m, hoursSinceQuit))
 
   // Weight: milestone completion + time-based recovery
-  const milestoneWeight = achievedMilestones.length / organMilestones.length;
+  const milestoneWeight = achievedMilestones.length / organMilestones.length
 
   // Logarithmic time-based recovery (faster early gains)
   const timeProgress =
-    hoursSinceQuit <= 0
-      ? 0
-      : Math.min(1, Math.log(hoursSinceQuit + 1) / Math.log(maxHours + 1));
+    hoursSinceQuit <= 0 ? 0 : Math.min(1, Math.log(hoursSinceQuit + 1) / Math.log(maxHours + 1))
 
   // Combined progress (50% milestones, 50% time)
-  const combinedProgress = milestoneWeight * 0.5 + timeProgress * 0.5;
+  const combinedProgress = milestoneWeight * 0.5 + timeProgress * 0.5
 
   // Recovery can repair up to 80% of the damage
-  const maxRecoverable = initialDamage * 0.8;
-  const currentDamage = initialDamage - maxRecoverable * combinedProgress;
+  const maxRecoverable = initialDamage * 0.8
+  const currentDamage = initialDamage - maxRecoverable * combinedProgress
 
   // Return recovery score (inverse of damage)
-  const recovery = 1 - currentDamage;
+  const recovery = 1 - currentDamage
 
-  return Math.min(1.0, Math.max(0.0, recovery));
+  return Math.min(1.0, Math.max(0.0, recovery))
 }
 
 /**
  * Format time since quit as "XXD XXH XXM"
  */
 export function formatTimeSinceQuit(milliseconds: number): string {
-  const totalSeconds = Math.floor(milliseconds / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const totalSeconds = Math.floor(milliseconds / 1000)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
 
-  return `${days.toString().padStart(2, "0")}D ${hours.toString().padStart(2, "0")}H ${minutes.toString().padStart(2, "0")}M`;
+  return `${days.toString().padStart(2, '0')}D ${hours.toString().padStart(2, '0')}H ${minutes.toString().padStart(2, '0')}M`
 }

@@ -2,48 +2,45 @@
  * BioTwinScene - Main container for the Bio-Twin visualization
  */
 
-import React from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import React from 'react'
+import { Dimensions, StyleSheet, View } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withTiming,
-} from "react-native-reanimated";
-import { BloodVessels } from "./BloodVessels";
-import { Heart } from "./Heart";
-import { Lungs } from "./Lungs";
+} from 'react-native-reanimated'
+import { BloodVessels } from './BloodVessels'
+import { Heart } from './Heart'
+import { Lungs } from './Lungs'
 
 interface BioTwinSceneProps {
-  recoveryProgress: number; // 0-1
-  height?: number;
+  recoveryProgress: number // 0-1
+  height?: number
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
-export function BioTwinScene({
-  recoveryProgress,
-  height = 350,
-}: BioTwinSceneProps) {
+export function BioTwinScene({ recoveryProgress, height = 350 }: BioTwinSceneProps) {
   // Slow rotation animation
-  const rotation = useSharedValue(0);
+  const rotation = useSharedValue(0)
 
   React.useEffect(() => {
     rotation.value = withRepeat(
       withTiming(360, { duration: 30000, easing: Easing.linear }),
       -1,
       false,
-    );
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const rotationStyle = useAnimatedStyle(() => ({
     transform: [
       { perspective: 1000 },
       { rotateY: `${rotation.value * 0.05}deg` }, // Very subtle rotation
     ],
-  }));
+  }))
 
   return (
     <View style={[styles.container, { height }]}>
@@ -68,41 +65,45 @@ export function BioTwinScene({
 
         {/* Heart in the center-front */}
         <View style={styles.heartContainer}>
-          <Heart recoveryProgress={recoveryProgress} width={92} height={92} />
+          <Heart
+            recoveryProgress={recoveryProgress}
+            width={92}
+            height={92}
+          />
         </View>
       </Animated.View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   scene: {
-    position: "relative",
-    width: "100%",
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bloodVesselsContainer: {
-    position: "absolute",
-    top: "5%",
-    alignItems: "center",
+    position: 'absolute',
+    top: '5%',
+    alignItems: 'center',
     opacity: 0.6,
   },
   lungsContainer: {
-    position: "absolute",
-    top: "10%",
-    alignItems: "center",
+    position: 'absolute',
+    top: '10%',
+    alignItems: 'center',
   },
   heartContainer: {
-    position: "absolute",
-    top: "30%",
-    alignItems: "center",
+    position: 'absolute',
+    top: '30%',
+    alignItems: 'center',
   },
-});
+})

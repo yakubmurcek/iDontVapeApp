@@ -2,17 +2,17 @@
  * Root Layout - App entry with providers
  */
 
-import { Colors } from "@/constants/Colors";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { SuperwallProvider } from "expo-superwall";
-import { StyleSheet, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import "react-native-reanimated";
+import { Colors } from '@/constants/Colors'
+import { Stack } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { SuperwallProvider } from 'expo-superwall'
+import { StyleSheet, View } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import 'react-native-reanimated'
 
 export default function RootLayout() {
   return (
-    <SuperwallProvider apiKeys={{ ios: "pk_NcyeSppmLwP7ZvujgyFeH" }}>
+    <SuperwallProvider apiKeys={{ ios: 'pk_NcyeSppmLwP7ZvujgyFeH' }}>
       <GestureHandlerRootView style={styles.container}>
         <View style={styles.container}>
           <StatusBar style="light" />
@@ -20,7 +20,7 @@ export default function RootLayout() {
             screenOptions={{
               headerShown: false,
               contentStyle: { backgroundColor: Colors.spaceCharcoal },
-              animation: "fade",
+              animation: 'fade',
             }}
           >
             <Stack.Screen name="index" />
@@ -30,7 +30,7 @@ export default function RootLayout() {
         </View>
       </GestureHandlerRootView>
     </SuperwallProvider>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -38,4 +38,4 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.spaceCharcoal,
   },
-});
+})

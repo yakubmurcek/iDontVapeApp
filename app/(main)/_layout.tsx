@@ -2,8 +2,8 @@
  * Main Layout - Tab/Stack structure for main app
  */
 
-import { Stack } from 'expo-router';
-import { Colors } from '@/constants/Colors';
+import { Stack } from 'expo-router'
+import { Colors } from '@/constants/Colors'
 
 export default function MainLayout() {
   return (
@@ -14,20 +14,20 @@ export default function MainLayout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen 
-        name="sos" 
-        options={{ 
+      <Stack.Screen
+        name="sos"
+        options={{
           presentation: 'modal',
           animation: 'slide_from_bottom',
-        }} 
+        }}
       />
-      <Stack.Screen 
-        name="logs" 
-        options={{ 
+      <Stack.Screen
+        name="logs"
+        options={{
           presentation: 'modal',
           animation: 'slide_from_bottom',
-        }} 
+        }}
       />
     </Stack>
-  );
+  )
 }

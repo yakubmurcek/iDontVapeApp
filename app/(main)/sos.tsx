@@ -2,12 +2,12 @@
  * SOS View - Craving help with breathing exercise
  */
 
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { Colors } from "@/constants/Colors";
-import { useLogsStore } from "@/store/logsStore";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Colors } from '@/constants/Colors'
+import { useLogsStore } from '@/store/logsStore'
+import { LinearGradient } from 'expo-linear-gradient'
+import { useRouter } from 'expo-router'
 import {
   Candy,
   Droplet,
@@ -19,8 +19,8 @@ import {
   Square,
   Waves,
   X,
-} from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+} from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
 import {
   Dimensions,
   FlatList,
@@ -30,131 +30,131 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-} from "react-native-reanimated";
+} from 'react-native-reanimated'
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
 const CRAVING_TIPS = [
   {
-    title: "Drink ice water",
-    desc: "The cold sensation can distract your brain and reduce cravings.",
+    title: 'Drink ice water',
+    desc: 'The cold sensation can distract your brain and reduce cravings.',
     icon: Droplet,
   },
   {
-    title: "Take a walk",
-    desc: "Even 5 minutes of movement releases dopamine naturally.",
+    title: 'Take a walk',
+    desc: 'Even 5 minutes of movement releases dopamine naturally.',
     icon: Footprints,
   },
   {
-    title: "Chew gum or mints",
-    desc: "Keeping your mouth busy helps fight the oral fixation.",
+    title: 'Chew gum or mints',
+    desc: 'Keeping your mouth busy helps fight the oral fixation.',
     icon: Candy,
   },
   {
-    title: "Text a friend",
-    desc: "Social connection reduces stress and craving intensity.",
+    title: 'Text a friend',
+    desc: 'Social connection reduces stress and craving intensity.',
     icon: MessageCircle,
   },
   {
-    title: "Do 10 push-ups",
+    title: 'Do 10 push-ups',
     desc: "Physical exertion redirects your body's energy.",
     icon: Dumbbell,
   },
   {
-    title: "Splash cold water",
-    desc: "Cold water on your face activates the dive reflex, calming nerves.",
+    title: 'Splash cold water',
+    desc: 'Cold water on your face activates the dive reflex, calming nerves.',
     icon: Waves,
   },
-];
+]
 
 export default function SOSView() {
-  const router = useRouter();
-  const addLog = useLogsStore((state) => state.addLog);
+  const router = useRouter()
+  const addLog = useLogsStore((state) => state.addLog)
 
-  const [cravingMinutes, setCravingMinutes] = useState(15);
-  const [isBreathing, setIsBreathing] = useState(false);
-  const [breathPhase, setBreathPhase] = useState("Breathe In");
+  const [cravingMinutes, setCravingMinutes] = useState(15)
+  const [isBreathing, setIsBreathing] = useState(false)
+  const [breathPhase, setBreathPhase] = useState('Breathe In')
 
-  const breatheScale = useSharedValue(1);
+  const breatheScale = useSharedValue(1)
 
   // Craving countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
-      setCravingMinutes((m) => Math.max(0, m - 1));
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
+      setCravingMinutes((m) => Math.max(0, m - 1))
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Breathing animation
   useEffect(() => {
-    if (!isBreathing) return;
+    if (!isBreathing) return
 
-    let isMounted = true;
+    let isMounted = true
 
     const runCycle = () => {
-      if (!isMounted || !isBreathing) return;
+      if (!isMounted || !isBreathing) return
 
       // Breathe in (4s)
-      setBreathPhase("Breathe In");
+      setBreathPhase('Breathe In')
       breatheScale.value = withTiming(1.4, {
         duration: 4000,
         easing: Easing.inOut(Easing.ease),
-      });
+      })
 
       setTimeout(() => {
-        if (!isMounted || !isBreathing) return;
+        if (!isMounted || !isBreathing) return
         // Hold (7s)
-        setBreathPhase("Hold");
+        setBreathPhase('Hold')
 
         setTimeout(() => {
-          if (!isMounted || !isBreathing) return;
+          if (!isMounted || !isBreathing) return
           // Breathe out (8s)
-          setBreathPhase("Breathe Out");
+          setBreathPhase('Breathe Out')
           breatheScale.value = withTiming(1, {
             duration: 8000,
             easing: Easing.inOut(Easing.ease),
-          });
+          })
 
           setTimeout(() => {
             if (isMounted && isBreathing) {
-              runCycle();
+              runCycle()
             }
-          }, 8000);
-        }, 7000);
-      }, 4000);
-    };
+          }, 8000)
+        }, 7000)
+      }, 4000)
+    }
 
-    runCycle();
+    runCycle()
 
     return () => {
-      isMounted = false;
-    };
-  }, [isBreathing, breatheScale]);
+      isMounted = false
+    }
+  }, [isBreathing, breatheScale])
 
   const breatheStyle = useAnimatedStyle(() => ({
     transform: [{ scale: breatheScale.value }],
-  }));
+  }))
 
   const toggleBreathing = () => {
     if (isBreathing) {
-      setIsBreathing(false);
-      setBreathPhase("Breathe In");
-      breatheScale.value = withTiming(1, { duration: 300 });
+      setIsBreathing(false)
+      setBreathPhase('Breathe In')
+      breatheScale.value = withTiming(1, { duration: 300 })
     } else {
-      setIsBreathing(true);
+      setIsBreathing(true)
     }
-  };
+  }
 
   const handleResisted = () => {
-    addLog("cravingResisted");
-    router.back();
-  };
+    addLog('cravingResisted')
+    router.back()
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -165,7 +165,10 @@ export default function SOSView() {
           onPress={() => router.back()}
           style={styles.closeButton}
         >
-          <X size={24} color={Colors.white} />
+          <X
+            size={24}
+            color={Colors.white}
+          />
         </TouchableOpacity>
       </View>
 
@@ -175,7 +178,10 @@ export default function SOSView() {
         showsVerticalScrollIndicator={false}
       >
         {/* Craving Timer */}
-        <Card borderColor="rgba(255, 184, 0, 0.3)" style={styles.timerCard}>
+        <Card
+          borderColor="rgba(255, 184, 0, 0.3)"
+          style={styles.timerCard}
+        >
           <Text style={styles.timerLabel}>CRAVING WILL FADE IN</Text>
           <View style={styles.timerRow}>
             <Text style={styles.timerValue}>~{cravingMinutes}</Text>
@@ -197,7 +203,7 @@ export default function SOSView() {
             {/* Animated circle */}
             <Animated.View style={[styles.breathCircle, breatheStyle]}>
               <LinearGradient
-                colors={["rgba(0, 240, 255, 0.4)", "rgba(0, 240, 255, 0.1)"]}
+                colors={['rgba(0, 240, 255, 0.4)', 'rgba(0, 240, 255, 0.1)']}
                 style={styles.breathGradient}
               />
             </Animated.View>
@@ -211,17 +217,20 @@ export default function SOSView() {
             style={styles.breathButton}
           >
             {isBreathing ? (
-              <Square size={20} color={Colors.white} fill={Colors.white} />
+              <Square
+                size={20}
+                color={Colors.white}
+                fill={Colors.white}
+              />
             ) : (
-              <Play size={20} color="#000" fill="#000" />
+              <Play
+                size={20}
+                color="#000"
+                fill="#000"
+              />
             )}
-            <Text
-              style={[
-                styles.breathButtonText,
-                isBreathing && styles.breathButtonTextAlt,
-              ]}
-            >
-              {isBreathing ? "Stop" : "Start Breathing"}
+            <Text style={[styles.breathButtonText, isBreathing && styles.breathButtonTextAlt]}>
+              {isBreathing ? 'Stop' : 'Start Breathing'}
             </Text>
           </TouchableOpacity>
         </Card>
@@ -237,7 +246,10 @@ export default function SOSView() {
             contentContainerStyle={styles.tipsList}
             renderItem={({ item }) => (
               <Card style={styles.tipCard}>
-                <item.icon size={24} color={Colors.dataBlue} />
+                <item.icon
+                  size={24}
+                  color={Colors.dataBlue}
+                />
                 <Text style={styles.tipTitle}>{item.title}</Text>
                 <Text style={styles.tipDesc}>{item.desc}</Text>
               </Card>
@@ -250,13 +262,18 @@ export default function SOSView() {
           <Button
             title="I Resisted This Craving!"
             onPress={handleResisted}
-            icon={<Hand size={20} color="#000" />}
+            icon={
+              <Hand
+                size={20}
+                color="#000"
+              />
+            }
             fullWidth
           />
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -265,20 +282,20 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.spaceCharcoal,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
-    position: "relative",
+    position: 'relative',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.white,
   },
   closeButton: {
-    position: "absolute",
+    position: 'absolute',
     right: 20,
     padding: 4,
   },
@@ -290,22 +307,22 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   timerCard: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   timerLabel: {
     fontSize: 10,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.subtleText,
     letterSpacing: 1,
   },
   timerRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
+    flexDirection: 'row',
+    alignItems: 'baseline',
     marginTop: 8,
   },
   timerValue: {
     fontSize: 48,
-    fontWeight: "700",
+    fontWeight: '700',
     color: Colors.cautionAmber,
   },
   timerUnit: {
@@ -316,16 +333,16 @@ const styles = StyleSheet.create({
   timerSubtext: {
     fontSize: 12,
     color: Colors.subtleText,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 12,
   },
   breathingCard: {
     marginTop: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.neonCyan,
     letterSpacing: 1,
     marginBottom: 24,
@@ -333,37 +350,37 @@ const styles = StyleSheet.create({
   breathingContainer: {
     width: 150,
     height: 150,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   breathRingOuter: {
-    position: "absolute",
+    position: 'absolute',
     width: 150,
     height: 150,
     borderRadius: 75,
     borderWidth: 3,
-    borderColor: "rgba(0, 240, 255, 0.2)",
+    borderColor: 'rgba(0, 240, 255, 0.2)',
   },
   breathCircle: {
-    position: "absolute",
+    position: 'absolute',
     width: 150,
     height: 150,
     borderRadius: 75,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   breathGradient: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   breathPhase: {
-    position: "absolute",
+    position: 'absolute',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.white,
   },
   breathButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
     marginTop: 24,
     paddingHorizontal: 24,
@@ -373,8 +390,8 @@ const styles = StyleSheet.create({
   },
   breathButtonText: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+    fontWeight: '600',
+    color: '#000',
   },
   breathButtonTextAlt: {
     color: Colors.white,
@@ -384,7 +401,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 10,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.subtleText,
     letterSpacing: 1,
     marginBottom: 12,
@@ -398,7 +415,7 @@ const styles = StyleSheet.create({
   },
   tipTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.white,
     marginTop: 12,
   },
@@ -411,4 +428,4 @@ const styles = StyleSheet.create({
   resistedContainer: {
     marginTop: 32,
   },
-});
+})

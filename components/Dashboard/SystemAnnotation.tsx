@@ -3,73 +3,73 @@
  * with a line connecting to the lung visualization
  */
 
-import { Colors } from "@/constants/Colors";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Colors } from '@/constants/Colors'
+import React from 'react'
+import { StyleSheet, Text, View } from 'react-native'
 import Animated, {
-    Easing,
-    useAnimatedProps,
-    useSharedValue,
-    withTiming,
-} from "react-native-reanimated";
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import Svg, {
-    Circle,
-    Defs,
-    Path,
-    Stop,
-    LinearGradient as SvgLinearGradient,
-} from "react-native-svg";
+  Circle,
+  Defs,
+  Path,
+  Stop,
+  LinearGradient as SvgLinearGradient,
+} from 'react-native-svg'
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle)
 
 export function SystemAnnotation({
   score,
   label,
   size = 100,
-  position = "right",
+  position = 'right',
   style,
 }: {
-  score: number;
-  label: string;
-  size?: number;
-  position?: "left" | "right";
-  style?: any;
+  score: number
+  label: string
+  size?: number
+  position?: 'left' | 'right'
+  style?: any
 }) {
-  const strokeWidth = 5;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
+  const strokeWidth = 5
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
 
-  const animatedProgress = useSharedValue(0);
+  const animatedProgress = useSharedValue(0)
 
   React.useEffect(() => {
     animatedProgress.value = withTiming(score, {
       duration: 1500,
       easing: Easing.out(Easing.cubic),
-    });
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [score]);
+  }, [score])
 
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference * (1 - animatedProgress.value),
-  }));
+  }))
 
-  const percentage = Math.round(score * 100);
+  const percentage = Math.round(score * 100)
 
   return (
     <View
       style={[
         styles.container,
-        position === "left" ? styles.containerLeft : styles.containerRight,
+        position === 'left' ? styles.containerLeft : styles.containerRight,
         style,
       ]}
     >
       {/* Connecting line */}
       <Svg
-        width={position === "left" ? 60 : 60}
+        width={position === 'left' ? 60 : 60}
         height={80}
         style={[
           styles.connector,
-          position === "left" ? styles.connectorLeft : styles.connectorRight,
+          position === 'left' ? styles.connectorLeft : styles.connectorRight,
         ]}
       >
         <Defs>
@@ -80,12 +80,20 @@ export function SystemAnnotation({
             x2="100%"
             y2="0%"
           >
-            <Stop offset="0%" stopColor={Colors.neonCyan} stopOpacity="0.6" />
-            <Stop offset="100%" stopColor={Colors.neonCyan} stopOpacity="0.2" />
+            <Stop
+              offset="0%"
+              stopColor={Colors.neonCyan}
+              stopOpacity="0.6"
+            />
+            <Stop
+              offset="100%"
+              stopColor={Colors.neonCyan}
+              stopOpacity="0.2"
+            />
           </SvgLinearGradient>
         </Defs>
 
-        {position === "right" ? (
+        {position === 'right' ? (
           <Path
             d="M 0 40 L 30 40 L 50 20"
             stroke="url(#lineGradient)"
@@ -106,7 +114,11 @@ export function SystemAnnotation({
 
       {/* Progress Ring and Text */}
       <View style={[styles.ringContainer, { width: size, height: size }]}>
-        <Svg width={size} height={size} style={styles.svg}>
+        <Svg
+          width={size}
+          height={size}
+          style={styles.svg}
+        >
           <Defs>
             <SvgLinearGradient
               id="ringGradient"
@@ -115,8 +127,14 @@ export function SystemAnnotation({
               x2="100%"
               y2="0%"
             >
-              <Stop offset="0%" stopColor={Colors.neonCyan} />
-              <Stop offset="100%" stopColor={Colors.healthGreen} />
+              <Stop
+                offset="0%"
+                stopColor={Colors.neonCyan}
+              />
+              <Stop
+                offset="100%"
+                stopColor={Colors.healthGreen}
+              />
             </SvgLinearGradient>
           </Defs>
 
@@ -159,13 +177,13 @@ export function SystemAnnotation({
         <Text style={styles.label}>{label}</Text>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    alignItems: "center",
+    position: 'absolute',
+    alignItems: 'center',
     zIndex: 10,
   },
   containerLeft: {
@@ -177,56 +195,56 @@ const styles = StyleSheet.create({
     top: 100,
   },
   connector: {
-    position: "absolute",
+    position: 'absolute',
   },
   connectorLeft: {
     right: -10,
-    top: "55%",
+    top: '55%',
     transform: [{ translateY: -40 }],
   },
   connectorRight: {
     left: -10,
-    top: "55%",
+    top: '55%',
     transform: [{ translateY: -40 }],
   },
   ringContainer: {
-    position: "relative",
-    alignItems: "center",
-    justifyContent: "center",
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: Colors.neonCyan,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
   svg: {
-    position: "absolute",
+    position: 'absolute',
   },
   textContainer: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   percentage: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: '700',
     color: Colors.white,
-    fontVariant: ["tabular-nums"],
+    fontVariant: ['tabular-nums'],
   },
   percentSymbol: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Colors.neonCyan,
     marginTop: -4,
   },
   labelContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 12,
     gap: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "rgba(103, 232, 249, 0.2)",
+    borderColor: 'rgba(103, 232, 249, 0.2)',
   },
   labelDot: {
     width: 4,
@@ -236,8 +254,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 10,
-    fontWeight: "700",
+    fontWeight: '700',
     color: Colors.neonCyan,
     letterSpacing: 1.5,
   },
-});
+})

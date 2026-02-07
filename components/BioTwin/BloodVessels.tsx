@@ -2,67 +2,64 @@
  * BloodVessels - SVG wireframe blood vessel visualization
  */
 
-import { ColorRGB, Colors } from "@/constants/Colors";
-import React from "react";
+import { ColorRGB, Colors } from '@/constants/Colors'
+import React from 'react'
 import Animated, {
-    Easing,
-    useAnimatedProps,
-    useSharedValue,
-    withRepeat,
-    withTiming,
-} from "react-native-reanimated";
-import Svg, { Circle, G, Path } from "react-native-svg";
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated'
+import Svg, { Circle, G, Path } from 'react-native-svg'
 
-const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedPath = Animated.createAnimatedComponent(Path)
 
 interface BloodVesselsProps {
-  recoveryProgress: number; // 0-1
-  width?: number;
-  height?: number;
+  recoveryProgress: number // 0-1
+  width?: number
+  height?: number
 }
 
 // Interpolate between damaged (orange) and healthy (blue/cyan)
 function interpolateColor(progress: number): string {
   const r = Math.round(
-    ColorRGB.damageOrange.r +
-      (ColorRGB.neonCyan.r - ColorRGB.damageOrange.r) * progress,
-  );
+    ColorRGB.damageOrange.r + (ColorRGB.neonCyan.r - ColorRGB.damageOrange.r) * progress,
+  )
   const g = Math.round(
-    ColorRGB.damageOrange.g +
-      (ColorRGB.neonCyan.g - ColorRGB.damageOrange.g) * progress,
-  );
+    ColorRGB.damageOrange.g + (ColorRGB.neonCyan.g - ColorRGB.damageOrange.g) * progress,
+  )
   const b = Math.round(
-    ColorRGB.damageOrange.b +
-      (ColorRGB.neonCyan.b - ColorRGB.damageOrange.b) * progress,
-  );
-  return `rgb(${r}, ${g}, ${b})`;
+    ColorRGB.damageOrange.b + (ColorRGB.neonCyan.b - ColorRGB.damageOrange.b) * progress,
+  )
+  return `rgb(${r}, ${g}, ${b})`
 }
 
-export function BloodVessels({
-  recoveryProgress,
-  width = 200,
-  height = 250,
-}: BloodVesselsProps) {
-  const color = interpolateColor(recoveryProgress);
+export function BloodVessels({ recoveryProgress, width = 200, height = 250 }: BloodVesselsProps) {
+  const color = interpolateColor(recoveryProgress)
 
   // Pulse animation for blood flow
-  const pulseOpacity = useSharedValue(0.4);
+  const pulseOpacity = useSharedValue(0.4)
 
   React.useEffect(() => {
     pulseOpacity.value = withRepeat(
       withTiming(0.8, { duration: 800, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
-    );
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const pulseAnimatedProps = useAnimatedProps(() => ({
     opacity: pulseOpacity.value,
-  }));
+  }))
 
   return (
-    <Svg width={width} height={height} viewBox="0 0 200 250">
+    <Svg
+      width={width}
+      height={height}
+      viewBox="0 0 200 250"
+    >
       <G>
         {/* Main arteries from heart area */}
 
@@ -191,10 +188,34 @@ export function BloodVessels({
         />
 
         {/* Junction nodes */}
-        <Circle cx={100} cy={100} r={4} fill={color} opacity={0.5} />
-        <Circle cx={100} cy={140} r={3} fill={color} opacity={0.4} />
-        <Circle cx={95} cy={120} r={2} fill={color} opacity={0.4} />
-        <Circle cx={105} cy={120} r={2} fill={color} opacity={0.4} />
+        <Circle
+          cx={100}
+          cy={100}
+          r={4}
+          fill={color}
+          opacity={0.5}
+        />
+        <Circle
+          cx={100}
+          cy={140}
+          r={3}
+          fill={color}
+          opacity={0.4}
+        />
+        <Circle
+          cx={95}
+          cy={120}
+          r={2}
+          fill={color}
+          opacity={0.4}
+        />
+        <Circle
+          cx={105}
+          cy={120}
+          r={2}
+          fill={color}
+          opacity={0.4}
+        />
 
         {/* Damage indicators */}
         {recoveryProgress < 0.7 && (
@@ -258,5 +279,5 @@ export function BloodVessels({
         )}
       </G>
     </Svg>
-  );
+  )
 }

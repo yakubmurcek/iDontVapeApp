@@ -2,8 +2,8 @@
  * Heart - SVG wireframe heart visualization with pulsing animation
  */
 
-import { ColorRGB, Colors } from "@/constants/Colors";
-import React from "react";
+import { ColorRGB, Colors } from '@/constants/Colors'
+import React from 'react'
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -12,46 +12,36 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
-} from "react-native-reanimated";
-import Svg, { Circle, G, Path } from "react-native-svg";
+} from 'react-native-reanimated'
+import Svg, { Circle, G, Path } from 'react-native-svg'
 
-const AnimatedG = Animated.createAnimatedComponent(G);
+const AnimatedG = Animated.createAnimatedComponent(G)
 
 interface HeartProps {
-  recoveryProgress: number; // 0-1
-  width?: number;
-  height?: number;
+  recoveryProgress: number // 0-1
+  width?: number
+  height?: number
 }
 
 // Interpolate between damaged (critical red) and healthy (vital crimson) colors
 function interpolateColor(progress: number): string {
   // Heart stays more red-tinted even when healthy
   // Heart stays red-tinted but shifts to a vital/healthy crimson-pink
-  const targetR = 255;
-  const targetG = 60;
-  const targetB = 100;
+  const targetR = 255
+  const targetG = 60
+  const targetB = 100
 
-  const r = Math.round(
-    ColorRGB.criticalRed.r + (targetR - ColorRGB.criticalRed.r) * progress,
-  );
-  const g = Math.round(
-    ColorRGB.criticalRed.g + (targetG - ColorRGB.criticalRed.g) * progress,
-  );
-  const b = Math.round(
-    ColorRGB.criticalRed.b + (targetB - ColorRGB.criticalRed.b) * progress,
-  );
-  return `rgb(${r}, ${g}, ${b})`;
+  const r = Math.round(ColorRGB.criticalRed.r + (targetR - ColorRGB.criticalRed.r) * progress)
+  const g = Math.round(ColorRGB.criticalRed.g + (targetG - ColorRGB.criticalRed.g) * progress)
+  const b = Math.round(ColorRGB.criticalRed.b + (targetB - ColorRGB.criticalRed.b) * progress)
+  return `rgb(${r}, ${g}, ${b})`
 }
 
-export function Heart({
-  recoveryProgress,
-  width = 80,
-  height = 80,
-}: HeartProps) {
-  const color = interpolateColor(recoveryProgress);
+export function Heart({ recoveryProgress, width = 80, height = 80 }: HeartProps) {
+  const color = interpolateColor(recoveryProgress)
 
   // Heartbeat animation
-  const heartbeatScale = useSharedValue(1);
+  const heartbeatScale = useSharedValue(1)
 
   React.useEffect(() => {
     heartbeatScale.value = withRepeat(
@@ -71,9 +61,9 @@ export function Heart({
       ),
       -1,
       false,
-    );
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const animatedProps = useAnimatedProps(() => ({
     transform: [
@@ -83,10 +73,14 @@ export function Heart({
       { translateX: -40 },
       { translateY: -40 },
     ],
-  }));
+  }))
 
   return (
-    <Svg width={width} height={height} viewBox="0 0 80 80">
+    <Svg
+      width={width}
+      height={height}
+      viewBox="0 0 80 80"
+    >
       <AnimatedG animatedProps={animatedProps}>
         {/* Heart outline */}
         <Path
@@ -149,13 +143,40 @@ export function Heart({
         />
 
         {/* Blood vessels coming out */}
-        <Path d="M25 20 L20 10" stroke={color} strokeWidth={1} opacity={0.6} />
-        <Path d="M40 15 L40 5" stroke={color} strokeWidth={1} opacity={0.6} />
-        <Path d="M55 20 L60 10" stroke={color} strokeWidth={1} opacity={0.6} />
+        <Path
+          d="M25 20 L20 10"
+          stroke={color}
+          strokeWidth={1}
+          opacity={0.6}
+        />
+        <Path
+          d="M40 15 L40 5"
+          stroke={color}
+          strokeWidth={1}
+          opacity={0.6}
+        />
+        <Path
+          d="M55 20 L60 10"
+          stroke={color}
+          strokeWidth={1}
+          opacity={0.6}
+        />
 
         {/* Central pulse point */}
-        <Circle cx={40} cy={40} r={4} fill={color} opacity={0.3} />
-        <Circle cx={40} cy={40} r={2} fill={color} opacity={0.6} />
+        <Circle
+          cx={40}
+          cy={40}
+          r={4}
+          fill={color}
+          opacity={0.3}
+        />
+        <Circle
+          cx={40}
+          cy={40}
+          r={2}
+          fill={color}
+          opacity={0.6}
+        />
 
         {/* Damage nodes */}
         {recoveryProgress < 0.6 && (
@@ -178,5 +199,5 @@ export function Heart({
         )}
       </AnimatedG>
     </Svg>
-  );
+  )
 }

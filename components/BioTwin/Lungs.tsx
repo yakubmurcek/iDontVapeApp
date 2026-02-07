@@ -2,52 +2,45 @@
  * Lungs - SVG wireframe lung visualization
  */
 
-import { ColorRGB, Colors } from "@/constants/Colors";
-import React from "react";
+import { ColorRGB, Colors } from '@/constants/Colors'
+import React from 'react'
 import Animated, {
-    Easing,
-    useAnimatedProps,
-    useSharedValue,
-    withRepeat,
-    withSequence,
-    withTiming,
-} from "react-native-reanimated";
-import Svg, { Circle, G, Path } from "react-native-svg";
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated'
+import Svg, { Circle, G, Path } from 'react-native-svg'
 
-const AnimatedG = Animated.createAnimatedComponent(G);
+const AnimatedG = Animated.createAnimatedComponent(G)
 
 interface LungsProps {
-  recoveryProgress: number; // 0-1
-  width?: number;
-  height?: number;
+  recoveryProgress: number // 0-1
+  width?: number
+  height?: number
 }
 
 // Interpolate between damaged (red) and healthy (cyan) colors
 function interpolateColor(progress: number): string {
   const r = Math.round(
-    ColorRGB.criticalRed.r +
-      (ColorRGB.neonCyan.r - ColorRGB.criticalRed.r) * progress,
-  );
+    ColorRGB.criticalRed.r + (ColorRGB.neonCyan.r - ColorRGB.criticalRed.r) * progress,
+  )
   const g = Math.round(
-    ColorRGB.criticalRed.g +
-      (ColorRGB.neonCyan.g - ColorRGB.criticalRed.g) * progress,
-  );
+    ColorRGB.criticalRed.g + (ColorRGB.neonCyan.g - ColorRGB.criticalRed.g) * progress,
+  )
   const b = Math.round(
-    ColorRGB.criticalRed.b +
-      (ColorRGB.neonCyan.b - ColorRGB.criticalRed.b) * progress,
-  );
-  return `rgb(${r}, ${g}, ${b})`;
+    ColorRGB.criticalRed.b + (ColorRGB.neonCyan.b - ColorRGB.criticalRed.b) * progress,
+  )
+  return `rgb(${r}, ${g}, ${b})`
 }
 
-export function Lungs({
-  recoveryProgress,
-  width = 200,
-  height = 180,
-}: LungsProps) {
-  const color = interpolateColor(recoveryProgress);
+export function Lungs({ recoveryProgress, width = 200, height = 180 }: LungsProps) {
+  const color = interpolateColor(recoveryProgress)
 
   // Breathing animation
-  const breatheScale = useSharedValue(1);
+  const breatheScale = useSharedValue(1)
 
   React.useEffect(() => {
     breatheScale.value = withRepeat(
@@ -57,9 +50,9 @@ export function Lungs({
       ),
       -1,
       false,
-    );
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const animatedProps = useAnimatedProps(() => ({
     transform: [
@@ -69,10 +62,14 @@ export function Lungs({
       { translateX: -100 },
       { translateY: -90 },
     ],
-  }));
+  }))
 
   return (
-    <Svg width={width} height={height} viewBox="0 0 200 180">
+    <Svg
+      width={width}
+      height={height}
+      viewBox="0 0 200 180"
+    >
       <AnimatedG animatedProps={animatedProps}>
         {/* Trachea */}
         <Path
@@ -236,5 +233,5 @@ export function Lungs({
         )}
       </AnimatedG>
     </Svg>
-  );
+  )
 }
