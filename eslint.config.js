@@ -7,4 +7,10 @@ module.exports = defineConfig([
   {
     ignores: ['dist/*'],
   },
+  {
+    rules: {
+      // Disabled: TypeScript already validates imports via typecheck on commit
+      'import/no-unresolved': 'off',
+    },
+  },
 ])
