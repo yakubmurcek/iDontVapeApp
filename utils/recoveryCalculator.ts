@@ -13,7 +13,6 @@ import {
 } from '@/constants/milestones'
 
 // Recovery time constants (in hours)
-const HOURS_PER_MONTH = 720
 const MAX_RECOVERY_HOURS = 8760 // 1 year for "full" recovery display
 const ORGAN_RECOVERY_HOURS: Record<OrganType, number> = {
   heart: 2160, // 3 months for significant cardiac benefits
@@ -166,6 +165,48 @@ export function calculateOrganRecovery(
   const recovery = 1 - currentDamage
 
   return Math.min(1.0, Math.max(0.0, recovery))
+}
+
+/**
+ * Calculate Oxygen Efficiency based on hours since quit
+ * Recovers significantly within 48-72 hours
+ * @returns 0-1 score (1 = 100% efficiency)
+ */
+export function calculateOxygenEfficiency(hoursSinceQuit: number): number {
+  if (hoursSinceQuit <= 0) return 0.7 // Start at 70% efficiency (impaired)
+
+  // Quick recovery curve - reaches near 100% in 72 hours
+  const recovery = Math.min(1, hoursSinceQuit / 72)
+
+  // Scale from 0.7 to 1.0
+  return 0.7 + 0.3 * recovery
+}
+
+/**
+ * Calculate Toxin Clearance (CO levels)
+ * CO leaves the body completely in ~24 hours
+ * @returns 0-1 score (1 = fully cleared)
+ */
+export function calculateToxinClearance(hoursSinceQuit: number): number {
+  if (hoursSinceQuit <= 0) return 0
+
+  // Linear clearance over 24 hours
+  return Math.min(1, hoursSinceQuit / 24)
+}
+
+/**
+ * Calculate Neural Reset (Nicotine Receptors)
+ * Takes about 3-4 weeks (504-672 hours) to downregulate
+ * @returns 0-1 score (1 = fully reset)
+ */
+export function calculateNeuralReset(hoursSinceQuit: number): number {
+  if (hoursSinceQuit <= 0) return 0
+
+  // Logarithmic recovery over ~4 weeks (672 hours)
+  const percentComplete = Math.min(1, hoursSinceQuit / 672)
+
+  // Non-linear feeling - starts slow, speeds up
+  return Math.pow(percentComplete, 1.2)
 }
 
 /**

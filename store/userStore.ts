@@ -6,8 +6,11 @@ import { OrganType } from '@/constants/milestones'
 import { asyncStorageAdapter } from '@/utils/asyncStorageAdapter'
 import {
   calculateInitialDamage,
+  calculateNeuralReset,
   calculateOrganRecovery,
+  calculateOxygenEfficiency,
   calculateSystemIntegrity,
+  calculateToxinClearance,
   formatTimeSinceQuit,
   getCurrentMilestoneProgress,
   MilestoneProgress,
@@ -50,6 +53,9 @@ interface UserState {
   getLungRecovery: () => number
   getHeartRecovery: () => number
   getCurrentMilestone: () => MilestoneProgress
+  getOxygenEfficiency: () => number
+  getToxinClearance: () => number
+  getNeuralReset: () => number
 }
 
 export const useUserStore = create<UserState>()(
@@ -159,6 +165,18 @@ export const useUserStore = create<UserState>()(
 
       getCurrentMilestone: () => {
         return getCurrentMilestoneProgress(get().getHoursSinceQuit())
+      },
+
+      getOxygenEfficiency: () => {
+        return calculateOxygenEfficiency(get().getHoursSinceQuit())
+      },
+
+      getToxinClearance: () => {
+        return calculateToxinClearance(get().getHoursSinceQuit())
+      },
+
+      getNeuralReset: () => {
+        return calculateNeuralReset(get().getHoursSinceQuit())
       },
     }),
     {

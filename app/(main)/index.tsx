@@ -3,6 +3,7 @@
  */
 
 import { BioTwinScene } from '@/components/BioTwin/BioTwinScene'
+import { HealthMetricCard } from '@/components/Dashboard/HealthMetricCard'
 import { MilestoneCard } from '@/components/Dashboard/MilestoneCard'
 import { StatCard } from '@/components/Dashboard/StatCard'
 import { SystemAnnotation } from '@/components/Dashboard/SystemAnnotation'
@@ -14,7 +15,15 @@ import { useUserStore } from '@/store/userStore'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { usePlacement } from 'expo-superwall'
-import { Activity, AlertTriangle, Clock, DollarSign, List } from 'lucide-react-native'
+import {
+  AlertTriangle,
+  Brain,
+  Clock,
+  DollarSign,
+  List,
+  ShieldAlert,
+  Wind,
+} from 'lucide-react-native'
 import React, { useEffect, useState } from 'react'
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
 
@@ -36,6 +45,9 @@ export default function Dashboard() {
   const getHoursSinceQuit = useUserStore((state) => state.getHoursSinceQuit)
   const getLungRecovery = useUserStore((state) => state.getLungRecovery)
   const getHeartRecovery = useUserStore((state) => state.getHeartRecovery)
+  const getOxygenEfficiency = useUserStore((state) => state.getOxygenEfficiency)
+  const getToxinClearance = useUserStore((state) => state.getToxinClearance)
+  const getNeuralReset = useUserStore((state) => state.getNeuralReset)
 
   // Show paywall 2 seconds after screen loads
   useEffect(() => {
@@ -61,6 +73,9 @@ export default function Dashboard() {
   const hoursSinceQuit = getHoursSinceQuit()
   const lungRecovery = getLungRecovery()
   const heartRecovery = getHeartRecovery()
+  const oxygenEfficiency = getOxygenEfficiency()
+  const toxinClearance = getToxinClearance()
+  const neuralReset = getNeuralReset()
 
   const handleReset = () => {
     Alert.alert(
@@ -137,29 +152,69 @@ export default function Dashboard() {
             hoursSinceQuit={hoursSinceQuit}
           />
 
-          {/* Stats Grid */}
-          <View style={styles.statsGrid}>
-            <StatCard
-              icon={
-                <DollarSign
-                  size={20}
-                  color={Colors.healthGreen}
-                />
+          {/* Credits Saved - Re-added as single prominent card */}
+          <StatCard
+            icon={
+              <DollarSign
+                size={20}
+                color={Colors.healthGreen}
+              />
+            }
+            label="CREDITS SAVED"
+            value={`$${moneySaved.toFixed(2)}`}
+            color={Colors.healthGreen}
+          />
+
+          {/* Health Metrics Section */}
+          <View style={styles.metricsContainer}>
+            <HealthMetricCard
+              label="Oxygen Efficiency"
+              value={`${Math.round(oxygenEfficiency * 100)}%`}
+              subValue={
+                oxygenEfficiency >= 1
+                  ? 'Optimal oxygen uptake restored.'
+                  : 'Improving daily. Exercise may feel easier.'
               }
-              label="CREDITS SAVED"
-              value={`$${moneySaved.toFixed(2)}`}
-              color={Colors.healthGreen}
-            />
-            <StatCard
+              progress={oxygenEfficiency}
+              type="bar"
               icon={
-                <Activity
-                  size={20}
+                <Wind
+                  size={18}
                   color={Colors.neonCyan}
                 />
               }
-              label="SYSTEM INTEGRITY"
-              value={`${Math.round(systemIntegrity * 100)}%`}
-              color={Colors.neonCyan}
+            />
+
+            <HealthMetricCard
+              label="Toxin Clearance"
+              value={toxinClearance >= 1 ? 'CLEARED' : 'PURGUNG...'}
+              subValue={
+                toxinClearance >= 1
+                  ? 'Carbon monoxide eliminated from blood.'
+                  : 'CO levels dropping. Blood oxygen rising.'
+              }
+              progress={toxinClearance}
+              type="badge"
+              icon={
+                <ShieldAlert
+                  size={18}
+                  color={Colors.damageOrange}
+                />
+              }
+            />
+
+            <HealthMetricCard
+              label="Neural Reset"
+              value={`${Math.round(neuralReset * 100)}%`}
+              subValue="Dopamine receptors normalizing."
+              progress={neuralReset}
+              type="progress"
+              icon={
+                <Brain
+                  size={18}
+                  color={Colors.dataBlue}
+                />
+              }
             />
           </View>
         </View>
@@ -170,28 +225,31 @@ export default function Dashboard() {
             <LinearGradient
               colors={[Colors.cautionAmber, Colors.damageOrange]}
               start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={styles.sosButton}
             >
               <Button
-                title="SOS"
+                title="SOS / CRAVING"
                 onPress={() => router.push('/(main)/sos')}
                 variant="ghost"
                 icon={
                   <AlertTriangle
                     size={20}
                     color="#000"
+                    strokeWidth={2.5}
                   />
                 }
                 style={styles.sosButtonInner}
                 textStyle={styles.sosButtonText}
               />
             </LinearGradient>
+            {/* Glow effect under SOS button */}
+            <View style={styles.sosGlow} />
           </View>
 
           <View style={styles.logsButtonContainer}>
             <Button
-              title="Logs"
+              title="Daily Logs"
               onPress={() => router.push('/(main)/logs')}
               variant="secondary"
               icon={
@@ -200,7 +258,7 @@ export default function Dashboard() {
                   color={Colors.white}
                 />
               }
-              fullWidth
+              style={styles.logsButton}
             />
           </View>
         </View>
@@ -208,10 +266,10 @@ export default function Dashboard() {
         {/* Reset Button */}
         <View style={styles.resetContainer}>
           <Button
-            title="Reset App Data"
+            title="Reset Bio-Twin System"
             onPress={handleReset}
             variant="ghost"
-            textStyle={{ color: Colors.damageOrange, fontSize: 12 }}
+            textStyle={{ color: Colors.subtleText, fontSize: 10, letterSpacing: 1 }}
           />
         </View>
       </ScrollView>
@@ -260,41 +318,67 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 16,
   },
+  metricsContainer: {
+    gap: 12,
+  },
   statsGrid: {
     flexDirection: 'row',
     gap: 12,
   },
   actionButtons: {
-    flexDirection: 'row',
     paddingHorizontal: 20,
     gap: 16,
-    marginTop: 24,
+    marginTop: 32,
+    marginBottom: 20,
   },
   sosButtonContainer: {
-    flex: 1,
+    width: '100%',
+    position: 'relative',
+    marginBottom: 8,
   },
   sosButton: {
-    borderRadius: 14,
-    shadowColor: Colors.cautionAmber,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 200, 0, 0.5)',
+  },
+  sosGlow: {
+    position: 'absolute',
+    top: 10,
+    left: '10%',
+    right: '10%',
+    height: 40,
+    backgroundColor: Colors.cautionAmber,
+    opacity: 0.3,
+    filter: 'blur(20px)',
+    zIndex: -1,
+    borderRadius: 20,
   },
   sosButtonInner: {
     width: '100%',
+    height: 56,
     backgroundColor: 'transparent',
   },
   sosButtonText: {
     color: '#000',
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   logsButtonContainer: {
-    flex: 1,
+    width: '100%',
+  },
+  logsButton: {
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   resetContainer: {
-    marginTop: 24,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 20,
     alignItems: 'center',
-    opacity: 0.6,
+    opacity: 0.5,
   },
 })
