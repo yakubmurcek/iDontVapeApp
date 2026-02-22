@@ -117,7 +117,8 @@ export const useUserStore = create<UserState>()(
 
       getTimeSinceQuit: () => {
         const recoveryStart = get().getRecoveryStartDate()
-        return Date.now() - recoveryStart.getTime()
+        const ms = Date.now() - recoveryStart.getTime()
+        return isNaN(ms) || ms < 0 ? 0 : ms
       },
 
       getHoursSinceQuit: () => {

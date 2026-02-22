@@ -43,13 +43,13 @@ export default function Dashboard() {
       await registerPlacement({ placement: 'campaign_trigger' })
     }, 2000)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [registerPlacement])
 
-  // Force re-render every second to update time-based computed values
+  // Force re-render every minute to update time-based computed values
+  // (display format is DDd HHh MMm, so per-minute updates are sufficient)
   const [, setTick] = useState(0)
   useEffect(() => {
-    const interval = setInterval(() => setTick((t: number) => t + 1), 1000)
+    const interval = setInterval(() => setTick((t: number) => t + 1), 60000)
     return () => clearInterval(interval)
   }, [])
 

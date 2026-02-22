@@ -39,8 +39,7 @@ export default function WelcomeStep() {
       -1,
       true,
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [scale])
 
   const animatedHeartStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
