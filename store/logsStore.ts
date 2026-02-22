@@ -44,7 +44,8 @@ interface LogsState {
 }
 
 function generateId(): string {
-  return crypto.randomUUID()
+  // Use a Math.random-based ID generator that works in React Native without crypto polyfills
+  return Math.random().toString(36).substring(2, 11)
 }
 
 function dateKey(date: Date): string {
