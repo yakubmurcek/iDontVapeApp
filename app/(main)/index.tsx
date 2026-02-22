@@ -23,9 +23,9 @@ export default function Dashboard() {
 
   // Superwall paywall placement
   const { registerPlacement } = usePlacement({
-    onError: (err) => console.error('Paywall Error:', err),
-    onPresent: (info) => console.log('Paywall Presented:', info),
-    onDismiss: (info, result) => console.log('Paywall Dismissed:', info, 'Result:', result),
+    onError: (err) => { if (__DEV__) console.error('Paywall Error:', err) },
+    onPresent: (info) => { if (__DEV__) console.log('Paywall Presented:', info) },
+    onDismiss: (info, result) => { if (__DEV__) console.log('Paywall Dismissed:', info, 'Result:', result) },
   })
 
   // Subscribe to user store

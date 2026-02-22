@@ -12,7 +12,7 @@ import 'react-native-reanimated'
 
 export default function RootLayout() {
   return (
-    <SuperwallProvider apiKeys={{ ios: 'pk_NcyeSppmLwP7ZvujgyFeH' }}>
+    <SuperwallProvider apiKeys={{ ios: process.env.EXPO_PUBLIC_SUPERWALL_IOS_KEY ?? '' }}>
       <GestureHandlerRootView style={styles.container}>
         <View style={styles.container}>
           <StatusBar style="light" />

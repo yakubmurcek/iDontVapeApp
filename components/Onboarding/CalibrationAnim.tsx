@@ -49,28 +49,28 @@ export function CalibrationAnim({ damageScore, onComplete }: CalibrationAnimProp
     )
 
     // Phase transitions
-    setTimeout(() => {
-      setPhase('analyzing')
-      setStatusText('ANALYZING PULMONARY SYSTEM...')
-    }, 2000)
+    const timers = [
+      setTimeout(() => {
+        setPhase('analyzing')
+        setStatusText('ANALYZING PULMONARY SYSTEM...')
+      }, 2000),
+      setTimeout(() => {
+        setStatusText('MAPPING VASCULAR NETWORK...')
+      }, 3500),
+      setTimeout(() => {
+        setStatusText('CALCULATING DAMAGE INDEX...')
+        damageOpacity.value = withTiming(1, { duration: 1000 })
+      }, 5000),
+      setTimeout(() => {
+        setPhase('complete')
+        setStatusText('CALIBRATION COMPLETE')
+      }, 6500),
+      setTimeout(() => {
+        onComplete()
+      }, 7500),
+    ]
 
-    setTimeout(() => {
-      setStatusText('MAPPING VASCULAR NETWORK...')
-    }, 3500)
-
-    setTimeout(() => {
-      setStatusText('CALCULATING DAMAGE INDEX...')
-      damageOpacity.value = withTiming(1, { duration: 1000 })
-    }, 5000)
-
-    setTimeout(() => {
-      setPhase('complete')
-      setStatusText('CALIBRATION COMPLETE')
-    }, 6500)
-
-    setTimeout(() => {
-      onComplete()
-    }, 7500)
+    return () => timers.forEach(clearTimeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
