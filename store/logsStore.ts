@@ -2,6 +2,7 @@
  * Logs Store - Tracks vaping logs and recovery events
  */
 
+import * as ExpoCrypto from 'expo-crypto'
 import { getMilestoneById } from '@/constants/milestones'
 import { asyncStorageAdapter } from '@/utils/asyncStorageAdapter'
 import { create } from 'zustand'
@@ -44,8 +45,7 @@ interface LogsState {
 }
 
 function generateId(): string {
-  // Use a Math.random-based ID generator that works in React Native without crypto polyfills
-  return Math.random().toString(36).substring(2, 11)
+  return ExpoCrypto.randomUUID()
 }
 
 function dateKey(date: Date): string {
