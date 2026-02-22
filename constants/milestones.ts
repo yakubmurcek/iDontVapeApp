@@ -9,6 +9,7 @@ export interface RecoveryMilestone {
   id: string
   displayName: string
   systemName: string
+  description: string
   hoursRequired: number
   relatedOrgan: OrganType
 }
@@ -20,6 +21,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'heartRateDrops',
     displayName: 'Heart Rate Drops',
     systemName: 'CARDIAC_RATE_NORMALIZING',
+    description:
+      'Your heart rate begins returning to normal as nicotine leaves your bloodstream. The constant stimulant pressure on your cardiac system is lifting.',
     hoursRequired: 0.33, // 20 minutes
     relatedOrgan: 'heart',
   },
@@ -27,6 +30,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'bloodPressureNormalized',
     displayName: 'Blood Pressure Normalized',
     systemName: 'BP_STABILIZED',
+    description:
+      'Blood pressure stabilizes as your arteries relax. The toxic constriction that forced your heart to work overtime is easing.',
     hoursRequired: 2,
     relatedOrgan: 'heart',
   },
@@ -34,6 +39,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'heartRateStabilized',
     displayName: 'Heart Rate Stabilized',
     systemName: 'CARDIAC_RHYTHM_STABLE',
+    description:
+      'Your resting heart rate has normalized. Your heart no longer races from the constant chemical assault of nicotine and propylene glycol.',
     hoursRequired: 24,
     relatedOrgan: 'heart',
   },
@@ -41,6 +48,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'cardiacStressReduced',
     displayName: 'Cardiac Stress Reduced',
     systemName: 'CARDIAC_LOAD_REDUCED',
+    description:
+      'Inflammation around your heart muscle is dropping. The oxidative stress that was slowly damaging cardiac tissue is fading.',
     hoursRequired: 168, // 1 week
     relatedOrgan: 'heart',
   },
@@ -48,6 +57,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'heartAttackRiskDecreased',
     displayName: 'Heart Attack Risk Decreased',
     systemName: 'CARDIAC_RISK_LOWERED',
+    description:
+      'Your risk of heart attack has significantly decreased. Arterial walls are healing and blood flow is approaching that of a non-vaper.',
     hoursRequired: 8760, // 1 year
     relatedOrgan: 'heart',
   },
@@ -58,6 +69,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'bloodOxygenNormalized',
     displayName: 'Blood Oxygen Normalized',
     systemName: 'O2_SATURATION_OPTIMAL',
+    description:
+      'Your blood oxygen levels are returning to normal. Cells throughout your body are receiving the oxygen they were starved of.',
     hoursRequired: 8,
     relatedOrgan: 'lungs',
   },
@@ -65,6 +78,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'carbonMonoxidePurged',
     displayName: 'Carbon Monoxide Purged',
     systemName: 'CO_PURGE_COMPLETE',
+    description:
+      'Carbon monoxide has been fully eliminated from your blood. Your hemoglobin can carry oxygen again instead of poison.',
     hoursRequired: 48, // 2 days for full clearance
     relatedOrgan: 'lungs',
   },
@@ -72,6 +87,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'bronchialRelaxation',
     displayName: 'Bronchial Tubes Relaxing',
     systemName: 'BRONCHIAL_TENSION_REDUCED',
+    description:
+      'Your bronchial tubes are relaxing and opening up. Breathing becomes easier as the chemical irritation subsides.',
     hoursRequired: 72, // 3 days
     relatedOrgan: 'lungs',
   },
@@ -79,6 +96,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'ciliaRegeneration',
     displayName: 'Cilia Regeneration Started',
     systemName: 'CILIA_REGEN_ACTIVE',
+    description:
+      'The tiny hair-like structures in your lungs are regrowing. These cilia sweep out mucus and toxins - vaping destroyed them.',
     hoursRequired: 336, // 2 weeks
     relatedOrgan: 'lungs',
   },
@@ -86,6 +105,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'mucusClearance',
     displayName: 'Mucus Clearance Improved',
     systemName: 'MUCOCILIARY_FUNCTION_RESTORED',
+    description:
+      'Your lungs can now effectively clear mucus and trapped particles. The persistent cough may fade as your airways heal.',
     hoursRequired: 720, // 1 month
     relatedOrgan: 'lungs',
   },
@@ -93,6 +114,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'lungCapacityImproved',
     displayName: 'Lung Capacity Improved',
     systemName: 'PULMONARY_CAPACITY_RESTORED',
+    description:
+      'Significant improvement in lung capacity. Physical activities feel easier and you can take deeper, fuller breaths.',
     hoursRequired: 2160, // 3 months
     relatedOrgan: 'lungs',
   },
@@ -100,6 +123,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'lungInflammationReduced',
     displayName: 'Lung Inflammation Reduced',
     systemName: 'PULMONARY_INFLAMMATION_DOWN',
+    description:
+      'Chronic lung inflammation has substantially decreased. The scarring and irritation from vaping aerosols is healing.',
     hoursRequired: 6480, // 9 months
     relatedOrgan: 'lungs',
   },
@@ -109,6 +134,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'nicotineCleared',
     displayName: 'Nicotine Cleared',
     systemName: 'NICOTINE_FLUSH_COMPLETE',
+    description:
+      'Nicotine has been fully flushed from your system. Your brain is rewiring its dopamine pathways - withdrawal peaks now but fades fast.',
     hoursRequired: 72,
     relatedOrgan: 'bloodVessels',
   },
@@ -116,6 +143,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'circulationImproving',
     displayName: 'Circulation Improving',
     systemName: 'VASCULAR_FLOW_IMPROVING',
+    description:
+      'Blood vessel walls are repairing. Endothelial function improves as nitric oxide production normalizes, meaning better blood flow everywhere.',
     hoursRequired: 336, // 2 weeks
     relatedOrgan: 'bloodVessels',
   },
@@ -123,6 +152,8 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'circulationRestored',
     displayName: 'Circulation Restored',
     systemName: 'VASCULAR_FLOW_OPTIMAL',
+    description:
+      'Vascular function is approaching normal. The toxic sludge that was increasing permeability and clot risk has been cleared.',
     hoursRequired: 2160, // 3 months
     relatedOrgan: 'bloodVessels',
   },

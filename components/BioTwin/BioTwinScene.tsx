@@ -1,9 +1,11 @@
 /**
  * BioTwinScene - Main container for the Bio-Twin visualization
+ * Organs are touchable to navigate to deep-dive screens
  */
 
+import { OrganType } from '@/constants/milestones'
 import React from 'react'
-import { Dimensions, StyleSheet, View } from 'react-native'
+import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -18,11 +20,12 @@ import { Lungs } from './Lungs'
 interface BioTwinSceneProps {
   recoveryProgress: number // 0-1
   height?: number
+  onOrganPress?: (organ: OrganType) => void
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
-export function BioTwinScene({ recoveryProgress, height = 350 }: BioTwinSceneProps) {
+export function BioTwinScene({ recoveryProgress, height = 350, onOrganPress }: BioTwinSceneProps) {
   // Slow rotation animation
   const rotation = useSharedValue(0)
 
@@ -46,31 +49,43 @@ export function BioTwinScene({ recoveryProgress, height = 350 }: BioTwinScenePro
     <View style={[styles.container, { height }]}>
       <Animated.View style={[styles.scene, rotationStyle]}>
         {/* Blood vessels in the background */}
-        <View style={styles.bloodVesselsContainer}>
+        <TouchableOpacity
+          style={styles.bloodVesselsContainer}
+          onPress={() => onOrganPress?.('bloodVessels')}
+          activeOpacity={0.7}
+        >
           <BloodVessels
             recoveryProgress={recoveryProgress}
             width={SCREEN_WIDTH * 0.92}
             height={height * 0.98}
           />
-        </View>
+        </TouchableOpacity>
 
         {/* Lungs positioned behind/around heart */}
-        <View style={styles.lungsContainer}>
+        <TouchableOpacity
+          style={styles.lungsContainer}
+          onPress={() => onOrganPress?.('lungs')}
+          activeOpacity={0.7}
+        >
           <Lungs
             recoveryProgress={recoveryProgress}
             width={SCREEN_WIDTH * 0.8}
             height={height * 0.69}
           />
-        </View>
+        </TouchableOpacity>
 
         {/* Heart in the center-front */}
-        <View style={styles.heartContainer}>
+        <TouchableOpacity
+          style={styles.heartContainer}
+          onPress={() => onOrganPress?.('heart')}
+          activeOpacity={0.7}
+        >
           <Heart
             recoveryProgress={recoveryProgress}
             width={92}
             height={92}
           />
-        </View>
+        </TouchableOpacity>
       </Animated.View>
     </View>
   )

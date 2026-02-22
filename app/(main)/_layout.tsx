@@ -28,6 +28,19 @@ export default function MainLayout() {
           animation: 'slide_from_bottom',
         }}
       />
+      <Stack.Screen
+        name="scan"
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      <Stack.Screen
+        name="organ/[id]"
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
     </Stack>
   )
 }

@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Colors } from '@/constants/Colors'
 import { useLogsStore } from '@/store/logsStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
+import { usePlacement } from 'expo-superwall'
 import {
   Candy,
   Droplet,
@@ -76,6 +78,9 @@ const CRAVING_TIPS = [
 export default function SOSView() {
   const router = useRouter()
   const addLog = useLogsStore((state) => state.addLog)
+  const cravingResistCount = useLogsStore((state) => state.getCravingsResisted())
+  const recordPaywallShown = useSettingsStore((state) => state.recordPaywallShown)
+  const { registerPlacement } = usePlacement({})
 
   const [cravingMinutes, setCravingMinutes] = useState(15)
   const [isBreathing, setIsBreathing] = useState(false)
@@ -153,6 +158,13 @@ export default function SOSView() {
 
   const handleResisted = () => {
     addLog('cravingResisted')
+
+    // Smart paywall: trigger after 3rd craving resisted (user relies on the app)
+    if (cravingResistCount + 1 === 3) {
+      registerPlacement({ placement: 'campaign_trigger' })
+      recordPaywallShown()
+    }
+
     router.back()
   }
 

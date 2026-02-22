@@ -3,6 +3,7 @@
  */
 
 import { BioTwinScene } from '@/components/BioTwin/BioTwinScene'
+import { MilestoneCelebration } from '@/components/Celebration/MilestoneCelebration'
 import { HealthMetricCard } from '@/components/Dashboard/HealthMetricCard'
 import { MilestoneCard } from '@/components/Dashboard/MilestoneCard'
 import { StatCard } from '@/components/Dashboard/StatCard'
@@ -10,12 +11,16 @@ import { SystemAnnotation } from '@/components/Dashboard/SystemAnnotation'
 import { Button } from '@/components/ui/Button'
 import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
+import { RecoveryMilestone } from '@/constants/milestones'
 import { useLogsStore } from '@/store/logsStore'
+import { useScanStore } from '@/store/scanStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useRouter } from 'expo-router'
+import { Href, useRouter } from 'expo-router'
 import { usePlacement } from 'expo-superwall'
 import {
+  Activity,
   AlertTriangle,
   Brain,
   Clock,
@@ -24,8 +29,16 @@ import {
   ShieldAlert,
   Wind,
 } from 'lucide-react-native'
-import React, { useEffect, useState } from 'react'
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -48,14 +61,22 @@ export default function Dashboard() {
   const getOxygenEfficiency = useUserStore((state) => state.getOxygenEfficiency)
   const getToxinClearance = useUserStore((state) => state.getToxinClearance)
   const getNeuralReset = useUserStore((state) => state.getNeuralReset)
+  const getNewlyAchievedMilestones = useUserStore((state) => state.getNewlyAchievedMilestones)
+  const markMilestoneCelebrated = useUserStore((state) => state.markMilestoneCelebrated)
 
-  // Show paywall 2 seconds after screen loads
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      await registerPlacement({ placement: 'campaign_trigger' })
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [registerPlacement])
+  // Scan store
+  const hasScanAvailableToday = useScanStore((state) => state.hasScanAvailableToday)
+  const scanStreak = useScanStore((state) => state.scanStreak)
+
+  // Settings store (paywall rate limiting)
+  const canShowPaywallToday = useSettingsStore((state) => state.canShowPaywallToday)
+  const recordPaywallShown = useSettingsStore((state) => state.recordPaywallShown)
+  const getDaysSinceQuit = useUserStore((state) => state.getDaysSinceQuit)
+
+  // Milestone celebration state
+  const [celebratingMilestone, setCelebratingMilestone] = useState<RecoveryMilestone | null>(null)
+  const [pendingCelebrations, setPendingCelebrations] = useState<RecoveryMilestone[]>([])
+
 
   // Force re-render every minute to update time-based computed values
   // (display format is DDd HHh MMm, so per-minute updates are sufficient)
@@ -64,6 +85,54 @@ export default function Dashboard() {
     const interval = setInterval(() => setTick((t: number) => t + 1), 60000)
     return () => clearInterval(interval)
   }, [])
+
+  // Smart paywall: show on dashboard load only after day 3 (user has invested time)
+  useEffect(() => {
+    const daysSinceQuit = getDaysSinceQuit()
+    if (daysSinceQuit >= 3 && canShowPaywallToday()) {
+      const timer = setTimeout(async () => {
+        await registerPlacement({ placement: 'campaign_trigger' })
+        recordPaywallShown()
+      }, 3000) // Wait 3s so user sees their progress first
+      return () => clearTimeout(timer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Check for newly achieved milestones
+  useEffect(() => {
+    const newMilestones = getNewlyAchievedMilestones()
+    if (newMilestones.length > 0 && !celebratingMilestone) {
+      setPendingCelebrations(newMilestones)
+      setCelebratingMilestone(newMilestones[0])
+    }
+  }, [getNewlyAchievedMilestones, celebratingMilestone])
+
+  const handleCelebrationDismiss = useCallback(() => {
+    if (celebratingMilestone) {
+      markMilestoneCelebrated(celebratingMilestone.id)
+
+      // Show paywall after milestone celebration (always allowed, even if already shown today)
+      registerPlacement({ placement: 'campaign_trigger' })
+      recordPaywallShown()
+    }
+
+    // Show next pending celebration or close
+    const remaining = pendingCelebrations.slice(1)
+    if (remaining.length > 0) {
+      setPendingCelebrations(remaining)
+      setCelebratingMilestone(remaining[0])
+    } else {
+      setPendingCelebrations([])
+      setCelebratingMilestone(null)
+    }
+  }, [
+    celebratingMilestone,
+    pendingCelebrations,
+    markMilestoneCelebrated,
+    registerPlacement,
+    recordPaywallShown,
+  ])
 
   // Get computed values
   const formattedTime = getFormattedTimeSinceQuit()
@@ -76,6 +145,13 @@ export default function Dashboard() {
   const oxygenEfficiency = getOxygenEfficiency()
   const toxinClearance = getToxinClearance()
   const neuralReset = getNeuralReset()
+
+  const handleOrganPress = useCallback(
+    (organ: 'lungs' | 'heart' | 'bloodVessels') => {
+      router.push(`/(main)/organ/${organ}` as Href)
+    },
+    [router],
+  )
 
   const handleReset = () => {
     Alert.alert(
@@ -96,13 +172,47 @@ export default function Dashboard() {
     )
   }
 
+  const scanAvailable = hasScanAvailableToday()
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Milestone Celebration Modal */}
+      <MilestoneCelebration
+        milestone={celebratingMilestone}
+        onDismiss={handleCelebrationDismiss}
+      />
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Scan Banner */}
+        {scanAvailable && (
+          <TouchableOpacity
+            style={styles.scanBanner}
+            onPress={() => router.push('/(main)/scan' as Href)}
+          >
+            <LinearGradient
+              colors={['rgba(0, 240, 255, 0.15)', 'rgba(0, 240, 255, 0.05)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.scanBannerGradient}
+            >
+              <Activity
+                size={16}
+                color={Colors.neonCyan}
+              />
+              <Text style={styles.scanBannerText}>SYSTEM DIAGNOSTIC AVAILABLE</Text>
+              {scanStreak > 0 && (
+                <View style={styles.streakBadge}>
+                  <Text style={styles.streakText}>{scanStreak}</Text>
+                </View>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+
         {/* Header */}
         <View style={styles.header}>
           <GlowText size="sm">PULMONARY SYSTEM RECOVERY</GlowText>
@@ -122,6 +232,7 @@ export default function Dashboard() {
           <BioTwinScene
             recoveryProgress={systemIntegrity}
             height={320}
+            onOrganPress={handleOrganPress}
           />
 
           {/* Lung Recovery Annotation */}
@@ -287,6 +398,40 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
+  },
+  scanBanner: {
+    marginHorizontal: 20,
+    marginTop: 8,
+  },
+  scanBannerGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 240, 255, 0.2)',
+  },
+  scanBannerText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.neonCyan,
+    letterSpacing: 1.5,
+  },
+  streakBadge: {
+    backgroundColor: Colors.neonCyan,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  streakText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#000',
   },
   header: {
     alignItems: 'center',
