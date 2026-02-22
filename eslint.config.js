@@ -1,6 +1,7 @@
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config')
 const expoConfig = require('eslint-config-expo/flat')
+const importPlugin = require('eslint-plugin-import')
 
 module.exports = defineConfig([
   expoConfig,
@@ -8,6 +9,9 @@ module.exports = defineConfig([
     ignores: ['dist/*'],
   },
   {
+    plugins: {
+      import: importPlugin,
+    },
     rules: {
       // Disabled: TypeScript already validates imports via typecheck on commit
       'import/no-unresolved': 'off',
