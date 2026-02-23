@@ -30,14 +30,8 @@ import {
   Wind,
 } from 'lucide-react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import {
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -56,9 +50,15 @@ export default function Dashboard() {
 
   // Superwall paywall placement
   const { registerPlacement } = usePlacement({
-    onError: (err) => { if (__DEV__) console.error('Paywall Error:', err) },
-    onPresent: (info) => { if (__DEV__) console.log('Paywall Presented:', info) },
-    onDismiss: (info, result) => { if (__DEV__) console.log('Paywall Dismissed:', info, 'Result:', result) },
+    onError: (err) => {
+      if (__DEV__) console.error('Paywall Error:', err)
+    },
+    onPresent: (info) => {
+      if (__DEV__) console.log('Paywall Presented:', info)
+    },
+    onDismiss: (info, result) => {
+      if (__DEV__) console.log('Paywall Dismissed:', info, 'Result:', result)
+    },
   })
 
   // Subscribe to user store
@@ -87,7 +87,6 @@ export default function Dashboard() {
   // Milestone celebration state
   const [celebratingMilestone, setCelebratingMilestone] = useState<RecoveryMilestone | null>(null)
   const [pendingCelebrations, setPendingCelebrations] = useState<RecoveryMilestone[]>([])
-
 
   // Force re-render every minute to update time-based computed values
   // (display format is DDd HHh MMm, so per-minute updates are sufficient)
@@ -205,12 +204,7 @@ export default function Dashboard() {
         ),
       },
     ],
-    opacity: interpolate(
-      scrollY.value,
-      [0, PARALLAX_SCROLL_DISTANCE],
-      [1, 0],
-      Extrapolation.CLAMP,
-    ),
+    opacity: interpolate(scrollY.value, [0, PARALLAX_SCROLL_DISTANCE], [1, 0], Extrapolation.CLAMP),
   }))
 
   return (
@@ -285,6 +279,7 @@ export default function Dashboard() {
               size={65}
               position="right"
               style={{ top: 125 }}
+              onPress={() => handleOrganPress('lungs')}
             />
 
             {/* Heart Recovery Annotation */}
@@ -294,9 +289,16 @@ export default function Dashboard() {
               size={65}
               position="left"
               style={{ top: 85 }}
+              onPress={() => handleOrganPress('heart')}
             />
           </View>
         </Animated.View>
+
+        {/* Fade gradient — smooth transition from organ section to content */}
+        <LinearGradient
+          colors={['transparent', Colors.spaceCharcoal]}
+          style={styles.contentFade}
+        />
 
         {/* Content Card — slides over the organ section */}
         <View style={styles.contentCard}>
@@ -505,15 +507,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginTop: 8,
   },
+  contentFade: {
+    height: 120,
+    marginTop: -120,
+    zIndex: 1,
+  },
   contentCard: {
     backgroundColor: Colors.spaceCharcoal,
-    borderTopLeftRadius: CONTENT_BORDER_RADIUS,
-    borderTopRightRadius: CONTENT_BORDER_RADIUS,
-    paddingTop: 24,
-    marginTop: -20,
     zIndex: 1,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 240, 255, 0.1)',
   },
   statsSection: {
     paddingHorizontal: 20,
