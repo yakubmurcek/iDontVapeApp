@@ -42,7 +42,6 @@ import Animated, {
 
 // Parallax constants
 const PARALLAX_FACTOR = 0.3
-const CONTENT_BORDER_RADIUS = 28
 const PARALLAX_SCROLL_DISTANCE = 300
 
 export default function Dashboard() {
