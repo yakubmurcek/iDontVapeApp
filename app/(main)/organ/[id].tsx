@@ -1,9 +1,11 @@
 /**
- * Organ Deep-Dive - Detailed view of a specific organ's damage and recovery
+ * Organ Deep-Dive - Editorial hero layout with zoom-in transition
  */
 
+import { BloodVessels } from '@/components/BioTwin/BloodVessels'
+import { Heart } from '@/components/BioTwin/Heart'
+import { Lungs } from '@/components/BioTwin/Lungs'
 import { Card } from '@/components/ui/Card'
-import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
 import {
   getMilestonesByOrgan,
@@ -19,7 +21,42 @@ import { usePlacement } from 'expo-superwall'
 import { ArrowLeft, CheckCircle2, Circle, Info } from 'lucide-react-native'
 import { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated'
+import Animated, {
+  Easing,
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
+
+function OrganVisualization({ type, recovery }: { type: OrganType; recovery: number }) {
+  switch (type) {
+    case 'heart':
+      return (
+        <Heart
+          recoveryProgress={recovery}
+          width={180}
+          height={180}
+        />
+      )
+    case 'lungs':
+      return (
+        <Lungs
+          recoveryProgress={recovery}
+          width={200}
+          height={180}
+        />
+      )
+    case 'bloodVessels':
+      return (
+        <BloodVessels
+          recoveryProgress={recovery}
+          width={200}
+          height={200}
+        />
+      )
+  }
+}
 
 export default function OrganDeepDive() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -32,7 +69,6 @@ export default function OrganDeepDive() {
   const { registerPlacement } = usePlacement({})
 
   const handleBack = useCallback(() => {
-    // Smart paywall: show when exiting organ deep-dive (user has seen value)
     if (canShowPaywallToday()) {
       registerPlacement({ placement: 'campaign_trigger' })
       recordPaywallShown()
@@ -45,6 +81,39 @@ export default function OrganDeepDive() {
     const interval = setInterval(() => setTick((t) => t + 1), 5000)
     return () => clearInterval(interval)
   }, [])
+
+  // Screen-level zoom-in transition
+  const screenScale = useSharedValue(1.15)
+  const screenOpacity = useSharedValue(0)
+
+  useEffect(() => {
+    screenScale.value = withTiming(1, { duration: 450, easing: Easing.out(Easing.cubic) })
+    screenOpacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.cubic) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const screenEnterStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: screenScale.value }],
+    opacity: screenOpacity.value,
+  }))
+
+  // Hero organ fly-in: starts large + centered, flies right + shrinks to background
+  const organTranslateX = useSharedValue(0)
+  const organScale = useSharedValue(1.6)
+  const organOpacity = useSharedValue(0.8)
+
+  useEffect(() => {
+    const timing = { duration: 500, easing: Easing.out(Easing.cubic) }
+    organTranslateX.value = withTiming(40, timing)
+    organScale.value = withTiming(1, timing)
+    organOpacity.value = withTiming(0.35, timing)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const organHeroStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: organTranslateX.value }, { scale: organScale.value }],
+    opacity: organOpacity.value,
+  }))
 
   const organType = id as OrganType
   const organ = getOrganData(organType)
@@ -64,148 +133,153 @@ export default function OrganDeepDive() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={handleBack}
-          style={styles.backButton}
-        >
-          <ArrowLeft
-            size={24}
-            color={Colors.white}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{organ.name}</Text>
-        <View style={{ width: 32 }} />
-      </View>
+      <Animated.View style={[{ flex: 1 }, screenEnterStyle]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.backButton}
+          >
+            <ArrowLeft
+              size={24}
+              color={Colors.white}
+            />
+          </TouchableOpacity>
+          <View style={{ width: 32 }} />
+        </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* System Name & Recovery */}
-        <Animated.View
-          entering={FadeInDown.duration(400)}
-          style={styles.systemHeader}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <GlowText size="sm">{organ.systemName}</GlowText>
-          <View style={styles.recoveryRing}>
-            <View style={styles.recoveryRingInner}>
-              <Text style={styles.recoveryPercent}>{recoveryPercent}</Text>
-              <Text style={styles.recoveryUnit}>%</Text>
-            </View>
+          {/* Hero Section — editorial layout */}
+          <View style={styles.heroSection}>
+            {/* Organ visualization — flies from center to right */}
+            <Animated.View style={[styles.heroOrganContainer, organHeroStyle]}>
+              <OrganVisualization
+                type={organType}
+                recovery={recovery}
+              />
+            </Animated.View>
+
+            {/* Text — fades in after organ starts settling */}
+            <Animated.View
+              entering={FadeInDown.duration(350).delay(250)}
+              style={styles.heroTextContainer}
+            >
+              <Text style={styles.heroSystemName}>{organ.systemName}</Text>
+              <View style={styles.heroRecoveryRow}>
+                <Text style={styles.heroRecoveryValue}>{recoveryPercent}</Text>
+                <Text style={styles.heroRecoveryUnit}>%</Text>
+              </View>
+              <Text style={styles.heroRecoveryLabel}>RECOVERY PROGRESS</Text>
+            </Animated.View>
           </View>
-          <Text style={styles.recoveryLabel}>RECOVERY PROGRESS</Text>
-        </Animated.View>
 
-        {/* Damage Report */}
-        <Animated.View entering={FadeInDown.delay(100).duration(400)}>
-          <Card
-            borderColor="rgba(255, 59, 59, 0.3)"
-            style={styles.damageCard}
-          >
-            <View style={styles.cardHeader}>
-              <Info
-                size={16}
-                color={Colors.criticalRed}
-              />
-              <Text style={styles.damageTitle}>{organ.damageTitle}</Text>
+          {/* Damage Report */}
+          <Animated.View entering={FadeInDown.duration(350).delay(300)}>
+            <Card
+              borderColor="rgba(255, 59, 59, 0.3)"
+              style={styles.damageCard}
+            >
+              <View style={styles.cardHeader}>
+                <Info
+                  size={16}
+                  color={Colors.criticalRed}
+                />
+                <Text style={styles.damageTitle}>{organ.damageTitle}</Text>
+              </View>
+              <Text style={styles.damageText}>{organ.damageDescription}</Text>
+            </Card>
+          </Animated.View>
+
+          {/* Recovery Description */}
+          <Animated.View entering={FadeInDown.duration(350).delay(370)}>
+            <Card
+              borderColor="rgba(0, 255, 136, 0.2)"
+              style={styles.recoveryCard}
+            >
+              <View style={styles.cardHeader}>
+                <CheckCircle2
+                  size={16}
+                  color={Colors.healthGreen}
+                />
+                <Text style={styles.recoveryTitle}>RECOVERY PROTOCOL</Text>
+              </View>
+              <Text style={styles.recoveryText}>{organ.recoveryDescription}</Text>
+            </Card>
+          </Animated.View>
+
+          {/* Recovery Timeline */}
+          <Animated.View entering={FadeInDown.duration(350).delay(430)}>
+            <Text style={styles.sectionLabel}>RECOVERY TIMELINE</Text>
+            <View style={styles.timeline}>
+              {milestones.map((milestone, index) => {
+                const achieved = isMilestoneAchieved(milestone, hoursSinceQuit)
+                const hoursRemaining = milestone.hoursRequired - hoursSinceQuit
+                const timeRemaining = formatTimeRemaining(hoursRemaining)
+
+                return (
+                  <Animated.View
+                    key={milestone.id}
+                    entering={FadeInDown.duration(300).delay(470 + index * 60)}
+                    style={styles.timelineItem}
+                  >
+                    {index > 0 && (
+                      <View
+                        style={[
+                          styles.timelineConnector,
+                          achieved && styles.timelineConnectorAchieved,
+                        ]}
+                      />
+                    )}
+                    <View style={styles.timelineIcon}>
+                      {achieved ? (
+                        <CheckCircle2
+                          size={20}
+                          color={Colors.healthGreen}
+                        />
+                      ) : (
+                        <Circle
+                          size={20}
+                          color={Colors.subtleText}
+                        />
+                      )}
+                    </View>
+                    <View style={styles.timelineContent}>
+                      <Text style={[styles.timelineName, achieved && styles.timelineNameAchieved]}>
+                        {milestone.displayName}
+                      </Text>
+                      <Text style={styles.timelineDescription}>{milestone.description}</Text>
+                      {!achieved && timeRemaining && (
+                        <Text style={styles.timelineEta}>ETA: {timeRemaining}</Text>
+                      )}
+                      {achieved && <Text style={styles.timelineComplete}>COMPLETE</Text>}
+                    </View>
+                  </Animated.View>
+                )
+              })}
             </View>
-            <Text style={styles.damageText}>{organ.damageDescription}</Text>
-          </Card>
-        </Animated.View>
+          </Animated.View>
 
-        {/* Recovery Description */}
-        <Animated.View entering={FadeInDown.delay(200).duration(400)}>
-          <Card
-            borderColor="rgba(0, 255, 136, 0.2)"
-            style={styles.recoveryCard}
-          >
-            <View style={styles.cardHeader}>
-              <CheckCircle2
-                size={16}
-                color={Colors.healthGreen}
-              />
-              <Text style={styles.recoveryTitle}>RECOVERY PROTOCOL</Text>
-            </View>
-            <Text style={styles.recoveryText}>{organ.recoveryDescription}</Text>
-          </Card>
-        </Animated.View>
-
-        {/* Recovery Timeline */}
-        <Animated.View entering={FadeInDown.delay(300).duration(400)}>
-          <Text style={styles.sectionLabel}>RECOVERY TIMELINE</Text>
-          <View style={styles.timeline}>
-            {milestones.map((milestone, index) => {
-              const achieved = isMilestoneAchieved(milestone, hoursSinceQuit)
-              const hoursRemaining = milestone.hoursRequired - hoursSinceQuit
-              const timeRemaining = formatTimeRemaining(hoursRemaining)
-
-              return (
-                <Animated.View
-                  key={milestone.id}
-                  entering={FadeInRight.delay(400 + index * 100).duration(300)}
-                  style={styles.timelineItem}
+          {/* Facts */}
+          <Animated.View entering={FadeInDown.duration(350).delay(530)}>
+            <Text style={styles.sectionLabel}>SYSTEM FACTS</Text>
+            <View style={styles.factsContainer}>
+              {organ.facts.map((fact, i) => (
+                <Card
+                  key={i}
+                  style={styles.factCard}
                 >
-                  {/* Timeline connector */}
-                  {index > 0 && (
-                    <View
-                      style={[
-                        styles.timelineConnector,
-                        achieved && styles.timelineConnectorAchieved,
-                      ]}
-                    />
-                  )}
-
-                  {/* Icon */}
-                  <View style={styles.timelineIcon}>
-                    {achieved ? (
-                      <CheckCircle2
-                        size={20}
-                        color={Colors.healthGreen}
-                      />
-                    ) : (
-                      <Circle
-                        size={20}
-                        color={Colors.subtleText}
-                      />
-                    )}
-                  </View>
-
-                  {/* Content */}
-                  <View style={styles.timelineContent}>
-                    <Text style={[styles.timelineName, achieved && styles.timelineNameAchieved]}>
-                      {milestone.displayName}
-                    </Text>
-                    <Text style={styles.timelineDescription}>{milestone.description}</Text>
-                    {!achieved && timeRemaining && (
-                      <Text style={styles.timelineEta}>ETA: {timeRemaining}</Text>
-                    )}
-                    {achieved && <Text style={styles.timelineComplete}>COMPLETE</Text>}
-                  </View>
-                </Animated.View>
-              )
-            })}
-          </View>
-        </Animated.View>
-
-        {/* Facts */}
-        <Animated.View entering={FadeInDown.delay(600).duration(400)}>
-          <Text style={styles.sectionLabel}>SYSTEM FACTS</Text>
-          <View style={styles.factsContainer}>
-            {organ.facts.map((fact, i) => (
-              <Card
-                key={i}
-                style={styles.factCard}
-              >
-                <Text style={styles.factNumber}>{String(i + 1).padStart(2, '0')}</Text>
-                <Text style={styles.factText}>{fact}</Text>
-              </Card>
-            ))}
-          </View>
-        </Animated.View>
-      </ScrollView>
+                  <Text style={styles.factNumber}>{String(i + 1).padStart(2, '0')}</Text>
+                  <Text style={styles.factText}>{fact}</Text>
+                </Card>
+              ))}
+            </View>
+          </Animated.View>
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   )
 }
@@ -224,16 +298,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 20,
   },
   backButton: {
     padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.white,
   },
   scrollView: {
     flex: 1,
@@ -242,42 +311,62 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 60,
   },
-  systemHeader: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    gap: 16,
-  },
-  recoveryRing: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: 'rgba(0, 240, 255, 0.3)',
-    alignItems: 'center',
+
+  // Hero section — editorial layout
+  heroSection: {
+    position: 'relative',
+    minHeight: 220,
     justifyContent: 'center',
+    marginBottom: 24,
+    overflow: 'hidden',
   },
-  recoveryRingInner: {
+  heroOrganContainer: {
+    position: 'absolute',
+    right: -20,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    opacity: 0.35,
+  },
+  heroTextContainer: {
+    zIndex: 2,
+    paddingRight: 80,
+  },
+  heroSystemName: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: Colors.white,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    lineHeight: 34,
+  },
+  heroRecoveryRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    marginTop: 12,
   },
-  recoveryPercent: {
-    fontSize: 42,
-    fontWeight: '800',
+  heroRecoveryValue: {
+    fontSize: 64,
+    fontWeight: '900',
     color: Colors.neonCyan,
     fontVariant: ['tabular-nums'],
+    lineHeight: 68,
   },
-  recoveryUnit: {
-    fontSize: 18,
-    fontWeight: '600',
+  heroRecoveryUnit: {
+    fontSize: 28,
+    fontWeight: '700',
     color: Colors.neonCyan,
     marginLeft: 2,
   },
-  recoveryLabel: {
+  heroRecoveryLabel: {
     fontSize: 10,
     fontWeight: '600',
     color: Colors.subtleText,
     letterSpacing: 2,
+    marginTop: 4,
   },
+
+  // Cards
   damageCard: {
     marginBottom: 12,
   },
@@ -312,6 +401,8 @@ const styles = StyleSheet.create({
     color: Colors.subtleText,
     lineHeight: 22,
   },
+
+  // Timeline
   sectionLabel: {
     fontSize: 10,
     fontWeight: '600',
@@ -373,6 +464,8 @@ const styles = StyleSheet.create({
     color: Colors.healthGreen,
     letterSpacing: 1,
   },
+
+  // Facts
   factsContainer: {
     gap: 10,
     marginBottom: 20,
