@@ -38,7 +38,7 @@ export default function MainLayout() {
       <Stack.Screen
         name="organ/[id]"
         options={{
-          animation: 'slide_from_right',
+          animation: 'none',
         }}
       />
     </Stack>

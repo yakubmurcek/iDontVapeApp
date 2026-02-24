@@ -30,24 +30,34 @@ import {
   Wind,
 } from 'lucide-react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated'
+
+// Parallax constants
+const PARALLAX_FACTOR = 0.3
+const PARALLAX_SCROLL_DISTANCE = 300
 
 export default function Dashboard() {
   const router = useRouter()
 
   // Superwall paywall placement
   const { registerPlacement } = usePlacement({
-    onError: (err) => { if (__DEV__) console.error('Paywall Error:', err) },
-    onPresent: (info) => { if (__DEV__) console.log('Paywall Presented:', info) },
-    onDismiss: (info, result) => { if (__DEV__) console.log('Paywall Dismissed:', info, 'Result:', result) },
+    onError: (err) => {
+      if (__DEV__) console.error('Paywall Error:', err)
+    },
+    onPresent: (info) => {
+      if (__DEV__) console.log('Paywall Presented:', info)
+    },
+    onDismiss: (info, result) => {
+      if (__DEV__) console.log('Paywall Dismissed:', info, 'Result:', result)
+    },
   })
 
   // Subscribe to user store
@@ -76,7 +86,6 @@ export default function Dashboard() {
   // Milestone celebration state
   const [celebratingMilestone, setCelebratingMilestone] = useState<RecoveryMilestone | null>(null)
   const [pendingCelebrations, setPendingCelebrations] = useState<RecoveryMilestone[]>([])
-
 
   // Force re-render every minute to update time-based computed values
   // (display format is DDd HHh MMm, so per-minute updates are sufficient)
@@ -174,6 +183,29 @@ export default function Dashboard() {
 
   const scanAvailable = hasScanAvailableToday()
 
+  // Parallax scroll tracking
+  const scrollY = useSharedValue(0)
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+    },
+  })
+
+  const organParallaxStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: scrollY.value * PARALLAX_FACTOR },
+      {
+        scale: interpolate(
+          scrollY.value,
+          [0, PARALLAX_SCROLL_DISTANCE],
+          [1, 0.92],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+    opacity: interpolate(scrollY.value, [0, PARALLAX_SCROLL_DISTANCE], [1, 0], Extrapolation.CLAMP),
+  }))
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Milestone Celebration Modal */}
@@ -182,208 +214,224 @@ export default function Dashboard() {
         onDismiss={handleCelebrationDismiss}
       />
 
-      <ScrollView
+      <Animated.ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
       >
-        {/* Scan Banner */}
-        {scanAvailable && (
-          <TouchableOpacity
-            style={styles.scanBanner}
-            onPress={() => router.push('/(main)/scan' as Href)}
-          >
-            <LinearGradient
-              colors={['rgba(0, 240, 255, 0.15)', 'rgba(0, 240, 255, 0.05)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.scanBannerGradient}
+        {/* Organ Section — parallax: scrolls slower, fades */}
+        <Animated.View style={organParallaxStyle}>
+          {/* Scan Banner */}
+          {scanAvailable && (
+            <TouchableOpacity
+              style={styles.scanBanner}
+              onPress={() => router.push('/(main)/scan' as Href)}
             >
-              <Activity
-                size={16}
-                color={Colors.neonCyan}
-              />
-              <Text style={styles.scanBannerText}>SYSTEM DIAGNOSTIC AVAILABLE</Text>
-              {scanStreak > 0 && (
-                <View style={styles.streakBadge}>
-                  <Text style={styles.streakText}>{scanStreak}</Text>
-                </View>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        )}
-
-        {/* Header */}
-        <View style={styles.header}>
-          <GlowText size="sm">PULMONARY SYSTEM RECOVERY</GlowText>
-
-          {/* Time since quit */}
-          <View style={styles.timeContainer}>
-            <Clock
-              size={16}
-              color={Colors.dataBlue}
-            />
-            <Text style={styles.timeText}>{formattedTime}</Text>
-          </View>
-        </View>
-
-        {/* Bio-Twin Scene */}
-        <View style={styles.bioTwinContainer}>
-          <BioTwinScene
-            recoveryProgress={systemIntegrity}
-            height={320}
-            onOrganPress={handleOrganPress}
-          />
-
-          {/* Lung Recovery Annotation */}
-          <SystemAnnotation
-            score={lungRecovery}
-            label="LUNG RECOVERY"
-            size={65}
-            position="right"
-            style={{ top: 125 }}
-          />
-
-          {/* Heart Recovery Annotation */}
-          <SystemAnnotation
-            score={heartRecovery}
-            label="HEART RECOVERY"
-            size={65}
-            position="left"
-            style={{ top: 85 }}
-          />
-        </View>
-
-        {/* Stats Section */}
-        <View style={styles.statsSection}>
-          {/* Milestone Card */}
-          <MilestoneCard
-            nextMilestone={milestone.next}
-            progress={milestone.progress}
-            hoursSinceQuit={hoursSinceQuit}
-          />
-
-          {/* Credits Saved - Re-added as single prominent card */}
-          <StatCard
-            icon={
-              <DollarSign
-                size={20}
-                color={Colors.healthGreen}
-              />
-            }
-            label="CREDITS SAVED"
-            value={`$${moneySaved.toFixed(2)}`}
-            color={Colors.healthGreen}
-          />
-
-          {/* Health Metrics Section */}
-          <View style={styles.metricsContainer}>
-            <HealthMetricCard
-              label="Oxygen Efficiency"
-              value={`${Math.round(oxygenEfficiency * 100)}%`}
-              subValue={
-                oxygenEfficiency >= 1
-                  ? 'Optimal oxygen uptake restored.'
-                  : 'Improving daily. Exercise may feel easier.'
-              }
-              progress={oxygenEfficiency}
-              type="bar"
-              icon={
-                <Wind
-                  size={18}
+              <LinearGradient
+                colors={['rgba(0, 240, 255, 0.15)', 'rgba(0, 240, 255, 0.05)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.scanBannerGradient}
+              >
+                <Activity
+                  size={16}
                   color={Colors.neonCyan}
                 />
-              }
+                <Text style={styles.scanBannerText}>SYSTEM DIAGNOSTIC AVAILABLE</Text>
+                {scanStreak > 0 && (
+                  <View style={styles.streakBadge}>
+                    <Text style={styles.streakText}>{scanStreak}</Text>
+                  </View>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+
+          {/* Header */}
+          <View style={styles.header}>
+            <GlowText size="sm">PULMONARY SYSTEM RECOVERY</GlowText>
+
+            {/* Time since quit */}
+            <View style={styles.timeContainer}>
+              <Clock
+                size={16}
+                color={Colors.dataBlue}
+              />
+              <Text style={styles.timeText}>{formattedTime}</Text>
+            </View>
+          </View>
+
+          {/* Bio-Twin Scene */}
+          <View style={styles.bioTwinContainer}>
+            <BioTwinScene
+              recoveryProgress={systemIntegrity}
+              height={320}
+              onOrganPress={handleOrganPress}
             />
 
-            <HealthMetricCard
-              label="Toxin Clearance"
-              value={toxinClearance >= 1 ? 'CLEARED' : 'PURGUNG...'}
-              subValue={
-                toxinClearance >= 1
-                  ? 'Carbon monoxide eliminated from blood.'
-                  : 'CO levels dropping. Blood oxygen rising.'
-              }
-              progress={toxinClearance}
-              type="badge"
-              icon={
-                <ShieldAlert
-                  size={18}
-                  color={Colors.damageOrange}
-                />
-              }
+            {/* Lung Recovery Annotation */}
+            <SystemAnnotation
+              score={lungRecovery}
+              label="LUNG RECOVERY"
+              size={65}
+              position="right"
+              style={{ top: 125 }}
+              onPress={() => handleOrganPress('lungs')}
             />
 
-            <HealthMetricCard
-              label="Neural Reset"
-              value={`${Math.round(neuralReset * 100)}%`}
-              subValue="Dopamine receptors normalizing."
-              progress={neuralReset}
-              type="progress"
-              icon={
-                <Brain
-                  size={18}
-                  color={Colors.dataBlue}
-                />
-              }
+            {/* Heart Recovery Annotation */}
+            <SystemAnnotation
+              score={heartRecovery}
+              label="HEART RECOVERY"
+              size={65}
+              position="left"
+              style={{ top: 85 }}
+              onPress={() => handleOrganPress('heart')}
             />
           </View>
-        </View>
+        </Animated.View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <View style={styles.sosButtonContainer}>
-            <LinearGradient
-              colors={[Colors.cautionAmber, Colors.damageOrange]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.sosButton}
-            >
-              <Button
-                title="SOS / CRAVING"
-                onPress={() => router.push('/(main)/sos')}
-                variant="ghost"
+        {/* Fade gradient — smooth transition from organ section to content */}
+        <LinearGradient
+          colors={['transparent', Colors.spaceCharcoal]}
+          style={styles.contentFade}
+        />
+
+        {/* Content Card — slides over the organ section */}
+        <View style={styles.contentCard}>
+          {/* Stats Section */}
+          <View style={styles.statsSection}>
+            {/* Milestone Card */}
+            <MilestoneCard
+              nextMilestone={milestone.next}
+              progress={milestone.progress}
+              hoursSinceQuit={hoursSinceQuit}
+            />
+
+            {/* Credits Saved - Re-added as single prominent card */}
+            <StatCard
+              icon={
+                <DollarSign
+                  size={20}
+                  color={Colors.healthGreen}
+                />
+              }
+              label="CREDITS SAVED"
+              value={`$${moneySaved.toFixed(2)}`}
+              color={Colors.healthGreen}
+            />
+
+            {/* Health Metrics Section */}
+            <View style={styles.metricsContainer}>
+              <HealthMetricCard
+                label="Oxygen Efficiency"
+                value={`${Math.round(oxygenEfficiency * 100)}%`}
+                subValue={
+                  oxygenEfficiency >= 1
+                    ? 'Optimal oxygen uptake restored.'
+                    : 'Improving daily. Exercise may feel easier.'
+                }
+                progress={oxygenEfficiency}
+                type="bar"
                 icon={
-                  <AlertTriangle
-                    size={20}
-                    color="#000"
-                    strokeWidth={2.5}
+                  <Wind
+                    size={18}
+                    color={Colors.neonCyan}
                   />
                 }
-                style={styles.sosButtonInner}
-                textStyle={styles.sosButtonText}
               />
-            </LinearGradient>
-            {/* Glow effect under SOS button */}
-            <View style={styles.sosGlow} />
+
+              <HealthMetricCard
+                label="Toxin Clearance"
+                value={toxinClearance >= 1 ? 'CLEARED' : 'PURGING...'}
+                subValue={
+                  toxinClearance >= 1
+                    ? 'Carbon monoxide eliminated from blood.'
+                    : 'CO levels dropping. Blood oxygen rising.'
+                }
+                progress={toxinClearance}
+                type="badge"
+                icon={
+                  <ShieldAlert
+                    size={18}
+                    color={Colors.damageOrange}
+                  />
+                }
+              />
+
+              <HealthMetricCard
+                label="Neural Reset"
+                value={`${Math.round(neuralReset * 100)}%`}
+                subValue="Dopamine receptors normalizing."
+                progress={neuralReset}
+                type="progress"
+                icon={
+                  <Brain
+                    size={18}
+                    color={Colors.dataBlue}
+                  />
+                }
+              />
+            </View>
           </View>
 
-          <View style={styles.logsButtonContainer}>
-            <Button
-              title="Daily Logs"
-              onPress={() => router.push('/(main)/logs')}
-              variant="secondary"
-              icon={
-                <List
-                  size={20}
-                  color={Colors.white}
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <View style={styles.sosButtonContainer}>
+              <LinearGradient
+                colors={[Colors.cautionAmber, Colors.damageOrange]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.sosButton}
+              >
+                <Button
+                  title="SOS / CRAVING"
+                  onPress={() => router.push('/(main)/sos')}
+                  variant="ghost"
+                  icon={
+                    <AlertTriangle
+                      size={20}
+                      color="#000"
+                      strokeWidth={2.5}
+                    />
+                  }
+                  style={styles.sosButtonInner}
+                  textStyle={styles.sosButtonText}
                 />
-              }
-              style={styles.logsButton}
+              </LinearGradient>
+              {/* Glow effect under SOS button */}
+              <View style={styles.sosGlow} />
+            </View>
+
+            <View style={styles.logsButtonContainer}>
+              <Button
+                title="Daily Logs"
+                onPress={() => router.push('/(main)/logs')}
+                variant="secondary"
+                icon={
+                  <List
+                    size={20}
+                    color={Colors.white}
+                  />
+                }
+                style={styles.logsButton}
+              />
+            </View>
+          </View>
+
+          {/* Reset Button */}
+          <View style={styles.resetContainer}>
+            <Button
+              title="Reset Bio-Twin System"
+              onPress={handleReset}
+              variant="ghost"
+              textStyle={{ color: Colors.subtleText, fontSize: 10, letterSpacing: 1 }}
             />
           </View>
         </View>
-
-        {/* Reset Button */}
-        <View style={styles.resetContainer}>
-          <Button
-            title="Reset Bio-Twin System"
-            onPress={handleReset}
-            variant="ghost"
-            textStyle={{ color: Colors.subtleText, fontSize: 10, letterSpacing: 1 }}
-          />
-        </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   )
 }
@@ -458,7 +506,15 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginTop: 8,
   },
-
+  contentFade: {
+    height: 120,
+    marginTop: -120,
+    zIndex: 1,
+  },
+  contentCard: {
+    backgroundColor: Colors.spaceCharcoal,
+    zIndex: 1,
+  },
   statsSection: {
     paddingHorizontal: 20,
     gap: 16,
