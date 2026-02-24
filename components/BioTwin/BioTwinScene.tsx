@@ -46,11 +46,7 @@ export function BioTwinScene({ recoveryProgress, height = 350, onOrganPress }: B
   }))
 
   return (
-    <TouchableOpacity
-      style={[styles.container, { height }]}
-      onPress={() => onOrganPress?.('lungs')}
-      activeOpacity={0.9}
-    >
+    <View style={[styles.container, { height }]}>
       <Animated.View style={[styles.scene, rotationStyle]}>
         {/* Blood vessels in the background */}
         <TouchableOpacity
@@ -91,7 +87,7 @@ export function BioTwinScene({ recoveryProgress, height = 350, onOrganPress }: B
           />
         </TouchableOpacity>
       </Animated.View>
-    </TouchableOpacity>
+    </View>
   )
 }
 
