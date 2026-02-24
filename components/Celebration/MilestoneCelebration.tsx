@@ -137,53 +137,56 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
             </GlowText>
           </Animated.View>
 
-          {/* Center content */}
-          <View style={styles.center}>
-            {/* Organ indicator ring */}
-            <View style={styles.organRing}>
-              <View
-                style={[styles.organRingInner, phase === 'complete' && styles.organRingComplete]}
-              >
-                <Text style={styles.organLabel}>{organLabel}</Text>
-                <GlowText
-                  size="xl"
-                  color={phase === 'complete' ? Colors.healthGreen : Colors.neonCyan}
+          {/* Content column - flow layout for organ ring, info, and button */}
+          <View style={styles.contentColumn}>
+            {/* Center content */}
+            <View style={styles.center}>
+              {/* Organ indicator ring */}
+              <View style={styles.organRing}>
+                <View
+                  style={[styles.organRingInner, phase === 'complete' && styles.organRingComplete]}
                 >
-                  {milestone.systemName.split('_')[0]}
-                </GlowText>
+                  <Text style={styles.organLabel}>{organLabel}</Text>
+                  <GlowText
+                    size="xl"
+                    color={phase === 'complete' ? Colors.healthGreen : Colors.neonCyan}
+                  >
+                    {milestone.systemName.split('_')[0]}
+                  </GlowText>
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* Milestone info (appears after repair) */}
-          {phase === 'complete' && (
-            <Animated.View
-              entering={FadeInUp.delay(200).duration(600)}
-              style={styles.milestoneInfo}
-            >
-              <Text style={styles.milestoneName}>{milestone.displayName}</Text>
-              <Text style={styles.milestoneDescription}>{milestone.description}</Text>
-            </Animated.View>
-          )}
-
-          {/* Dismiss button */}
-          {phase === 'complete' && (
-            <Animated.View entering={FadeIn.delay(600).duration(400)}>
-              <TouchableOpacity
-                style={styles.dismissButton}
-                onPress={onDismiss}
+            {/* Milestone info (appears after repair) */}
+            {phase === 'complete' && (
+              <Animated.View
+                entering={FadeInUp.delay(200).duration(600)}
+                style={styles.milestoneInfo}
               >
-                <LinearGradient
-                  colors={[Colors.neonCyan, Colors.healthGreen]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.dismissGradient}
+                <Text style={styles.milestoneName}>{milestone.displayName}</Text>
+                <Text style={styles.milestoneDescription}>{milestone.description}</Text>
+              </Animated.View>
+            )}
+
+            {/* Dismiss button */}
+            {phase === 'complete' && (
+              <Animated.View entering={FadeIn.delay(600).duration(400)}>
+                <TouchableOpacity
+                  style={styles.dismissButton}
+                  onPress={onDismiss}
                 >
-                  <Text style={styles.dismissText}>CONTINUE</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
+                  <LinearGradient
+                    colors={[Colors.neonCyan, Colors.healthGreen]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.dismissGradient}
+                  >
+                    <Text style={styles.dismissText}>CONTINUE</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
+            )}
+          </View>
         </View>
       </View>
     </Modal>
@@ -231,6 +234,9 @@ const styles = StyleSheet.create({
     top: 120,
     alignItems: 'center',
   },
+  contentColumn: {
+    alignItems: 'center',
+  },
   center: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -266,10 +272,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   milestoneInfo: {
-    position: 'absolute',
-    bottom: 200,
     alignItems: 'center',
     paddingHorizontal: 24,
+    marginTop: 40,
   },
   milestoneName: {
     fontSize: 22,
@@ -285,8 +290,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   dismissButton: {
-    position: 'absolute',
-    bottom: -120,
+    marginTop: 32,
   },
   dismissGradient: {
     paddingHorizontal: 48,
