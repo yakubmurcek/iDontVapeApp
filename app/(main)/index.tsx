@@ -345,7 +345,7 @@ export default function Dashboard() {
 
               <HealthMetricCard
                 label="Toxin Clearance"
-                value={toxinClearance >= 1 ? 'CLEARED' : 'PURGUNG...'}
+                value={toxinClearance >= 1 ? 'CLEARED' : 'PURGING...'}
                 subValue={
                   toxinClearance >= 1
                     ? 'Carbon monoxide eliminated from blood.'
