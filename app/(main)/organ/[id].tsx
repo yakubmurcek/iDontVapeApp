@@ -8,9 +8,9 @@ import { Lungs } from '@/components/BioTwin/Lungs'
 import { Card } from '@/components/ui/Card'
 import { Colors } from '@/constants/Colors'
 import {
+  formatTimeRemaining,
   getMilestonesByOrgan,
   isMilestoneAchieved,
-  formatTimeRemaining,
   OrganType,
 } from '@/constants/milestones'
 import { getOrganData } from '@/constants/organData'
@@ -20,7 +20,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { usePlacement } from 'expo-superwall'
 import { ArrowLeft, CheckCircle2, Circle, Info } from 'lucide-react-native'
 import { useCallback, useEffect, useState } from 'react'
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Animated, {
   Easing,
   FadeInDown,
@@ -28,6 +28,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 function OrganVisualization({ type, recovery }: { type: OrganType; recovery: number }) {
   switch (type) {

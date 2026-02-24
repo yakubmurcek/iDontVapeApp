@@ -4,13 +4,13 @@
 
 import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
-import { useScanStore, ScanMetrics, ScanResult } from '@/store/scanStore'
+import { ScanMetrics, ScanResult, useScanStore } from '@/store/scanStore'
 import { useUserStore } from '@/store/userStore'
 import * as Haptics from 'expo-haptics'
 import { useRouter } from 'expo-router'
 import { X } from 'lucide-react-native'
 import { useCallback, useEffect, useState } from 'react'
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Animated, {
   Easing,
   FadeInDown,
@@ -20,6 +20,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 type ScanPhase = 'scanning' | 'results' | 'complete'
 
