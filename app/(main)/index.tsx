@@ -50,13 +50,22 @@ export default function Dashboard() {
   // Superwall paywall placement
   const { registerPlacement } = usePlacement({
     onError: (err) => {
-      if (__DEV__) console.error('Paywall Error:', err)
+      if (__DEV__) {
+        const message = err instanceof Error ? err.message : String(err)
+        console.error('Paywall Error:', message)
+      }
     },
     onPresent: (info) => {
-      if (__DEV__) console.log('Paywall Presented:', info)
+      if (__DEV__) {
+        // Only log the identifier to avoid exposing sensitive SDK data
+        console.log('Paywall Presented:', info?.identifier)
+      }
     },
     onDismiss: (info, result) => {
-      if (__DEV__) console.log('Paywall Dismissed:', info, 'Result:', result)
+      if (__DEV__) {
+        // Only log the identifier and result enum/string
+        console.log('Paywall Dismissed:', info?.identifier, 'Result:', result)
+      }
     },
   })
 

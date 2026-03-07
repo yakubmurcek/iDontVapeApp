@@ -10,14 +10,20 @@ export const asyncStorageAdapter: StateStorage = {
     try {
       await AsyncStorage.setItem(name, value)
     } catch (e) {
-      if (__DEV__) console.error('[AsyncStorage] setItem failed:', e)
+      if (__DEV__) {
+        const message = e instanceof Error ? e.message : String(e)
+        console.error('[AsyncStorage] setItem failed:', message)
+      }
     }
   },
   getItem: async (name) => {
     try {
       return await AsyncStorage.getItem(name)
     } catch (e) {
-      if (__DEV__) console.error('[AsyncStorage] getItem failed:', e)
+      if (__DEV__) {
+        const message = e instanceof Error ? e.message : String(e)
+        console.error('[AsyncStorage] getItem failed:', message)
+      }
       return null
     }
   },
@@ -25,7 +31,10 @@ export const asyncStorageAdapter: StateStorage = {
     try {
       await AsyncStorage.removeItem(name)
     } catch (e) {
-      if (__DEV__) console.error('[AsyncStorage] removeItem failed:', e)
+      if (__DEV__) {
+        const message = e instanceof Error ? e.message : String(e)
+        console.error('[AsyncStorage] removeItem failed:', message)
+      }
     }
   },
 }

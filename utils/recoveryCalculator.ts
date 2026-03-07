@@ -156,7 +156,8 @@ export function calculateOrganRecovery(
     hoursSinceQuit <= 0 ? 0 : Math.min(1, Math.log(hoursSinceQuit + 1) / Math.log(maxHours + 1))
 
   // Combined progress
-  const combinedProgress = milestoneWeight * ORGAN_MILESTONE_WEIGHT + timeProgress * ORGAN_TIME_WEIGHT
+  const combinedProgress =
+    milestoneWeight * ORGAN_MILESTONE_WEIGHT + timeProgress * ORGAN_TIME_WEIGHT
 
   const maxRecoverable = initialDamage * MAX_RECOVERABLE_FRACTION
   const currentDamage = initialDamage - maxRecoverable * combinedProgress

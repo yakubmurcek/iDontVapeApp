@@ -125,7 +125,9 @@ export function getLogTitle(type: LogEntryType, milestoneId?: string): string {
     case 'dailyCheckIn':
       return 'Daily Check-in'
     case 'milestoneAchieved':
-      return milestoneId ? (getMilestoneById(milestoneId)?.displayName ?? 'Milestone Achieved') : 'Milestone Achieved'
+      return milestoneId
+        ? (getMilestoneById(milestoneId)?.displayName ?? 'Milestone Achieved')
+        : 'Milestone Achieved'
     case 'cravingResisted':
       return 'Craving Resisted'
     case 'relapse':

@@ -8,7 +8,6 @@ module.exports = defineConfig([
     ignores: ['dist/*'],
   },
   {
-    rules: {
-    },
+    rules: {},
   },
 ])
