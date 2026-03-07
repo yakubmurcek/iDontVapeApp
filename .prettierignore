@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.expo/
+ios/
+android/
+
+# Lock files (don't reformat)
+package-lock.json
+yarn.lock
+
+# Generated files
+*.generated.*

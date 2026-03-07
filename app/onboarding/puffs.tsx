@@ -9,7 +9,8 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { useRouter } from 'expo-router'
 import { ChevronLeft, Zap } from 'lucide-react-native'
 import React, { useState } from 'react'
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function PuffsStep() {
   const router = useRouter()
