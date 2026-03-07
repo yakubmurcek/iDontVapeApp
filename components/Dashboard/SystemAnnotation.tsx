@@ -46,8 +46,7 @@ export function SystemAnnotation({
       duration: 1500,
       easing: Easing.out(Easing.cubic),
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [score])
+  }, [score, animatedProgress])
 
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference * (1 - animatedProgress.value),

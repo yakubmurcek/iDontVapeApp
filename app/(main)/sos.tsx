@@ -1,7 +1,3 @@
-/**
- * SOS View - Craving help with breathing exercise
- */
-
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Colors } from '@/constants/Colors'
@@ -20,7 +16,7 @@ import {
   Waves,
   X,
 } from 'lucide-react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import {
   Dimensions,
   FlatList,
@@ -36,6 +32,9 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withSequence,
+  withRepeat,
+  runOnJS,
 } from 'react-native-reanimated'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
@@ -83,6 +82,9 @@ export default function SOSView() {
 
   const breatheScale = useSharedValue(1)
 
+  // Use refs for timers so we can clear them reliably
+  const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
+
   // Craving countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
@@ -91,49 +93,54 @@ export default function SOSView() {
     return () => clearInterval(interval)
   }, [])
 
+  const clearAllTimers = () => {
+    timerRefs.current.forEach(clearTimeout)
+    timerRefs.current = []
+  }
+
+  // Set phase safely across re-renders
+  const setPhaseSafe = (phase: string) => {
+    setBreathPhase(phase)
+  }
+
   // Breathing animation
   useEffect(() => {
-    if (!isBreathing) return
-
-    let isMounted = true
-
-    const runCycle = () => {
-      if (!isMounted || !isBreathing) return
-
-      // Breathe in (4s)
+    if (!isBreathing) {
+      breatheScale.value = withTiming(1, { duration: 300 })
       setBreathPhase('Breathe In')
-      breatheScale.value = withTiming(1.4, {
-        duration: 4000,
-        easing: Easing.inOut(Easing.ease),
-      })
-
-      setTimeout(() => {
-        if (!isMounted || !isBreathing) return
-        // Hold (7s)
-        setBreathPhase('Hold')
-
-        setTimeout(() => {
-          if (!isMounted || !isBreathing) return
-          // Breathe out (8s)
-          setBreathPhase('Breathe Out')
-          breatheScale.value = withTiming(1, {
-            duration: 8000,
-            easing: Easing.inOut(Easing.ease),
-          })
-
-          setTimeout(() => {
-            if (isMounted && isBreathing) {
-              runCycle()
-            }
-          }, 8000)
-        }, 7000)
-      }, 4000)
+      return
     }
 
-    runCycle()
+    // When starting, reset scale
+    breatheScale.value = 1
+
+    // Create sequence with callbacks using runOnJS to update state safely
+    breatheScale.value = withRepeat(
+      withSequence(
+        // Inhale
+        withTiming(1.4, { duration: 4000, easing: Easing.inOut(Easing.ease) }, (finished) => {
+          if (finished) runOnJS(setPhaseSafe)('Hold')
+        }),
+        // Hold full
+        withTiming(1.4, { duration: 7000 }, (finished) => {
+          if (finished) runOnJS(setPhaseSafe)('Breathe Out')
+        }),
+        // Exhale
+        withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }, (finished) => {
+          if (finished) runOnJS(setPhaseSafe)('Breathe In')
+        }),
+      ),
+      -1, // infinite repeat
+      false, // no reverse
+    )
+
+    // Initial state setup before animation sequence triggers first JS callback
+    setPhaseSafe('Breathe In')
 
     return () => {
-      isMounted = false
+      // Reanimated handles cancelling the active animation automatically when unmounted or value changes,
+      // but if we were using setTimeout we'd clean up here. The store/state updates are safe
+      // because we only call setPhaseSafe if the animation step `finished` successfully (it wasn't cancelled)
     }
   }, [isBreathing, breatheScale])
 
@@ -142,13 +149,7 @@ export default function SOSView() {
   }))
 
   const toggleBreathing = () => {
-    if (isBreathing) {
-      setIsBreathing(false)
-      setBreathPhase('Breathe In')
-      breatheScale.value = withTiming(1, { duration: 300 })
-    } else {
-      setIsBreathing(true)
-    }
+    setIsBreathing(!isBreathing)
   }
 
   const handleResisted = () => {

@@ -15,7 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { usePlacement } from 'expo-superwall'
 import { Activity, AlertTriangle, Clock, DollarSign, List } from 'lucide-react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 export default function Dashboard() {
@@ -27,6 +27,12 @@ export default function Dashboard() {
     onPresent: (info) => console.log('Paywall Presented:', info),
     onDismiss: (info, result) => console.log('Paywall Dismissed:', info, 'Result:', result),
   })
+
+  // To prevent the hook from resetting the useEffect if it changes on re-renders, store it
+  const registerPlacementRef = useRef(registerPlacement)
+  useEffect(() => {
+    registerPlacementRef.current = registerPlacement
+  }, [registerPlacement])
 
   // Subscribe to user store
   const getFormattedTimeSinceQuit = useUserStore((state) => state.getFormattedTimeSinceQuit)
@@ -40,10 +46,9 @@ export default function Dashboard() {
   // Show paywall 2 seconds after screen loads
   useEffect(() => {
     const timer = setTimeout(async () => {
-      await registerPlacement({ placement: 'campaign_trigger' })
+      await registerPlacementRef.current({ placement: 'campaign_trigger' })
     }, 2000)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Force re-render every second to update time-based computed values

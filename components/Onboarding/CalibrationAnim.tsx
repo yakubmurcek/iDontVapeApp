@@ -71,8 +71,7 @@ export function CalibrationAnim({ damageScore, onComplete }: CalibrationAnimProp
     setTimeout(() => {
       onComplete()
     }, 7500)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [damageOpacity, onComplete, pulseScale, scanLineY])
 
   const scanLineStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: scanLineY.value }],

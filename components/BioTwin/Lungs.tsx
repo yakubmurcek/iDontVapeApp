@@ -51,8 +51,7 @@ export function Lungs({ recoveryProgress, width = 200, height = 180 }: LungsProp
       -1,
       false,
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [breatheScale, recoveryProgress])
 
   const animatedProps = useAnimatedProps(() => ({
     transform: [

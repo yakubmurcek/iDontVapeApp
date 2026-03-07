@@ -68,8 +68,7 @@ export function SlideButton({ onComplete, text = 'Slide to Begin' }: SlideButton
     }
 
     runAnimations()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hintX, shimmer])
 
   const pan = Gesture.Pan()
     .onStart(() => {

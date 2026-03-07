@@ -32,8 +32,7 @@ export function BioTwinScene({ recoveryProgress, height = 350 }: BioTwinScenePro
       -1,
       false,
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [rotation])
 
   const rotationStyle = useAnimatedStyle(() => ({
     transform: [
