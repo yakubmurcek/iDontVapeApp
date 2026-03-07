@@ -206,7 +206,7 @@ export default function OrganDeepDive() {
                   size={16}
                   color={Colors.healthGreen}
                 />
-                <Text style={styles.recoveryTitle}>RECOVERY PROTOCOL</Text>
+                <Text style={styles.recoveryTitle}>RECOVERY STATUS</Text>
               </View>
               <Text style={styles.recoveryText}>{organ.recoveryDescription}</Text>
             </Card>
@@ -266,7 +266,7 @@ export default function OrganDeepDive() {
 
           {/* Facts */}
           <Animated.View entering={FadeInDown.duration(350).delay(530)}>
-            <Text style={styles.sectionLabel}>SYSTEM FACTS</Text>
+            <Text style={styles.sectionLabel}>KEY FACTS</Text>
             <View style={styles.factsContainer}>
               {organ.facts.map((fact, i) => (
                 <Card

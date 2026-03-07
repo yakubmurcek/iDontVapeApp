@@ -175,7 +175,7 @@ export default function ScanScreen() {
                 size="sm"
                 color={Colors.healthGreen}
               >
-                DIAGNOSTIC COMPLETE
+                SCAN COMPLETE
               </GlowText>
             </Animated.View>
 
@@ -185,7 +185,7 @@ export default function ScanScreen() {
                 entering={FadeInDown.delay(100).duration(400)}
                 style={styles.streakContainer}
               >
-                <Text style={styles.streakLabel}>SCAN STREAK</Text>
+                <Text style={styles.streakLabel}>CHECK-IN STREAK</Text>
                 <Text style={styles.streakValue}>{scanResult.streak}</Text>
                 <Text style={styles.streakDays}>day{scanResult.streak === 1 ? '' : 's'}</Text>
               </Animated.View>

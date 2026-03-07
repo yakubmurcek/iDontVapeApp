@@ -223,32 +223,6 @@ export default function Dashboard() {
       >
         {/* Organ Section — parallax: scrolls slower, fades */}
         <Animated.View style={organParallaxStyle}>
-          {/* Scan Banner */}
-          {scanAvailable && (
-            <TouchableOpacity
-              style={styles.scanBanner}
-              onPress={() => router.push('/(main)/scan' as Href)}
-            >
-              <LinearGradient
-                colors={['rgba(0, 240, 255, 0.15)', 'rgba(0, 240, 255, 0.05)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.scanBannerGradient}
-              >
-                <Activity
-                  size={16}
-                  color={Colors.neonCyan}
-                />
-                <Text style={styles.scanBannerText}>SYSTEM DIAGNOSTIC AVAILABLE</Text>
-                {scanStreak > 0 && (
-                  <View style={styles.streakBadge}>
-                    <Text style={styles.streakText}>{scanStreak}</Text>
-                  </View>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-          )}
-
           {/* Header */}
           <View style={styles.header}>
             <GlowText size="sm">PULMONARY SYSTEM RECOVERY</GlowText>
@@ -269,6 +243,9 @@ export default function Dashboard() {
               recoveryProgress={systemIntegrity}
               height={320}
               onOrganPress={handleOrganPress}
+              visualMode="hologram"
+              showFrame={false}
+              animateFrame={false}
             />
 
             {/* Lung Recovery Annotation */}
@@ -379,6 +356,43 @@ export default function Dashboard() {
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
+            {scanAvailable && (
+              <TouchableOpacity
+                style={styles.scanBannerReachable}
+                onPress={() => router.push('/(main)/scan' as Href)}
+              >
+                <LinearGradient
+                  colors={['rgba(10, 35, 44, 0.9)', 'rgba(8, 25, 33, 0.9)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.scanBannerGradient}
+                >
+                  <View style={styles.scanBannerLeft}>
+                    <Activity
+                      size={15}
+                      color={Colors.neonCyan}
+                    />
+                    <View style={styles.scanBannerTextWrap}>
+                      <View style={styles.scanBannerTitleRow}>
+                        <Text style={styles.scanBannerText}>Daily Scan Ready</Text>
+                        {scanStreak > 0 && (
+                          <View style={styles.streakBadge}>
+                            <Text style={styles.streakText}>{scanStreak}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.scanBannerSubtext}>
+                        Check today&apos;s recovery changes
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.scanBannerAction}>
+                    <Text style={styles.scanBannerActionText}>Run</Text>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
+
             <View style={styles.sosButtonContainer}>
               <LinearGradient
                 colors={[Colors.cautionAmber, Colors.damageOrange]}
@@ -439,7 +453,7 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.spaceCharcoal,
+    backgroundColor: '#090B10',
   },
   scrollView: {
     flex: 1,
@@ -449,37 +463,76 @@ const styles = StyleSheet.create({
   },
   scanBanner: {
     marginHorizontal: 20,
-    marginTop: 8,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  scanBannerReachable: {
+    width: '100%',
+    marginBottom: 4,
   },
   scanBannerGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0, 240, 255, 0.2)',
+    borderColor: 'rgba(0, 240, 255, 0.16)',
+  },
+  scanBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
+  },
+  scanBannerTextWrap: {
+    flexShrink: 1,
+  },
+  scanBannerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   scanBannerText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.neonCyan,
-    letterSpacing: 1.5,
+    letterSpacing: 0.3,
+  },
+  scanBannerSubtext: {
+    marginTop: 1,
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.62)',
   },
   streakBadge: {
     backgroundColor: Colors.neonCyan,
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   streakText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: '#000',
+  },
+  scanBannerAction: {
+    marginLeft: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0, 240, 255, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 240, 255, 0.22)',
+  },
+  scanBannerActionText: {
+    color: Colors.neonCyan,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   header: {
     alignItems: 'center',

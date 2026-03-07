@@ -63,7 +63,7 @@ export async function scheduleMilestoneAlert(
   const id = await Notifications.scheduleNotificationAsync({
     content: {
       title: `SYSTEM ALERT: ${milestone.systemName}`,
-      body: `${milestone.displayName} complete. Tap to view repair sequence.`,
+      body: `${milestone.displayName} reached. Tap to view repair sequence.`,
       data: { type: 'milestone', milestoneId: milestone.id },
       sound: 'default',
     },
@@ -99,7 +99,7 @@ export async function scheduleDailyReminder(hour: number = 9, minute: number = 0
   await Notifications.scheduleNotificationAsync({
     content: {
       title: 'SYSTEM DIAGNOSTIC READY',
-      body: 'Run your daily Bio-Twin scan to track recovery progress.',
+      body: 'Run your daily Bio-Twin scan to track healing progress.',
       data: { type: 'dailyReminder', screen: 'scan' },
       sound: 'default',
     },
@@ -120,8 +120,8 @@ export async function scheduleInactivityWarning(): Promise<void> {
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'WARNING: System integrity declining',
-      body: 'Your Bio-Twin needs monitoring. Run a diagnostic.',
+      title: 'WARNING: Check-in missed',
+      body: 'Your Bio-Twin needs a fresh scan. Run a diagnostic.',
       data: { type: 'inactivity', screen: 'scan' },
       sound: 'default',
     },

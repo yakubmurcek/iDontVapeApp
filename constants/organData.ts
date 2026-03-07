@@ -21,9 +21,9 @@ export const ORGAN_DATA: Record<OrganType, OrganInfo> = {
     systemName: 'PULMONARY SYSTEM',
     damageTitle: 'PULMONARY DAMAGE REPORT',
     damageDescription:
-      'Vaping floods your lungs with heated aerosol containing ultrafine particles, heavy metals, and volatile organic compounds. These toxins cause inflammation deep in the bronchial tubes, destroy the cilia that sweep out debris, and leave scarring that reduces capacity. Chronic exposure leads to bronchitis, impaired gas exchange, and increased risk of EVALI - a potentially fatal lung injury.',
+      'Every vape session can make breathing harder than it should be. Hot chemical aerosol inflames your airways and damages the tiny filters your lungs need. When you stop, damage can slow and healing can begin with each day.',
     recoveryDescription:
-      'Your lungs are remarkable at self-repair. Within days, bronchial tubes relax and breathing improves. Over weeks, cilia regrow and begin clearing accumulated mucus. Within months, lung capacity measurably increases and inflammation subsides. Full recovery of damaged tissue takes 9-12 months.',
+      'Your lungs start recovering sooner than most people expect. Within days, airway irritation eases, and within weeks, tiny filters begin regrowing. Keep going, and breathing strength can keep improving over the coming months.',
     facts: [
       'Vape aerosol contains up to 2,000 chemicals including formaldehyde and acrolein',
       'Cilia take 2-4 weeks to begin regrowing after you stop',
@@ -38,9 +38,9 @@ export const ORGAN_DATA: Record<OrganType, OrganInfo> = {
     systemName: 'CARDIAC SYSTEM',
     damageTitle: 'CARDIAC DAMAGE REPORT',
     damageDescription:
-      'Nicotine forces your heart into overdrive - elevating heart rate, constricting blood vessels, and spiking blood pressure with every puff. This constant stimulant assault causes chronic inflammation of heart muscle tissue, accelerates atherosclerosis, and dramatically increases the risk of heart attack and stroke even in young vapers.',
+      'Each puff overworks your heart and raises blood pressure fast. Nicotine spikes heart rate and tightens vessels, but quitting removes that daily strain.',
     recoveryDescription:
-      'Your cardiovascular system responds quickly to quitting. Heart rate and blood pressure begin normalizing within hours. Within a week, cardiac stress markers drop significantly. Over months, arterial inflammation resolves and blood vessel function improves toward normal.',
+      'Heart recovery starts within hours after you stop vaping. Heart rate and pressure begin settling, and steady quit time moves function toward normal.',
     facts: [
       'Nicotine raises heart rate by 10-20 bpm immediately after use',
       'Young vapers have 2x higher risk of heart attack than non-vapers',
@@ -55,9 +55,9 @@ export const ORGAN_DATA: Record<OrganType, OrganInfo> = {
     systemName: 'VASCULAR SYSTEM',
     damageTitle: 'VASCULAR DAMAGE REPORT',
     damageDescription:
-      'Vaping devastates your vascular system at the cellular level. Nicotine and oxidative chemicals damage the endothelium - the thin protective lining of every blood vessel. This impairs nitric oxide production, increases vessel permeability, promotes blood clot formation, and starves tissues of adequate blood flow throughout your entire body.',
+      'Vaping can choke off smooth blood flow before you even feel symptoms. Nicotine and chemicals injure the vessel lining that controls flow, pressure, and clotting. Once you stop, your vessels can start stabilizing and protecting circulation again.',
     recoveryDescription:
-      'Once nicotine is fully flushed from your system (about 72 hours), your blood vessels begin healing. Endothelial function improves within weeks as nitric oxide production normalizes. Over 2-3 months, circulation is substantially restored and clot risk drops toward baseline.',
+      'Your blood vessels begin to rebound after nicotine clears your system. In the next weeks, vessel function improves and blood flow becomes more efficient. Keep quitting momentum, and circulation can keep improving over the next months.',
     facts: [
       'Nicotine is fully cleared from your bloodstream within 72 hours',
       'Your body has roughly 60,000 miles of blood vessels',

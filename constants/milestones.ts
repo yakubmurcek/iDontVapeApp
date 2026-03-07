@@ -21,44 +21,42 @@ export const MILESTONES: RecoveryMilestone[] = [
     id: 'heartRateDrops',
     displayName: 'Heart Rate Drops',
     systemName: 'CARDIAC_RATE_NORMALIZING',
-    description:
-      'Your heart rate begins returning to normal as nicotine leaves your bloodstream. The constant stimulant pressure on your cardiac system is lifting.',
+    description: 'Nicotine is leaving your blood, so your heart does not need to work as hard.',
     hoursRequired: 0.33, // 20 minutes
     relatedOrgan: 'heart',
   },
   {
     id: 'bloodPressureNormalized',
-    displayName: 'Blood Pressure Normalized',
+    displayName: 'Blood Pressure Settles',
     systemName: 'BP_STABILIZED',
     description:
-      'Blood pressure stabilizes as your arteries relax. The toxic constriction that forced your heart to work overtime is easing.',
+      'Your blood vessels start to relax, and your blood pressure moves toward a healthier range.',
     hoursRequired: 2,
     relatedOrgan: 'heart',
   },
   {
     id: 'heartRateStabilized',
-    displayName: 'Heart Rate Stabilized',
+    displayName: 'Heart Rate Stable',
     systemName: 'CARDIAC_RHYTHM_STABLE',
-    description:
-      'Your resting heart rate has normalized. Your heart no longer races from the constant chemical assault of nicotine and propylene glycol.',
+    description: 'Your resting heartbeat is becoming steadier without constant nicotine hits.',
     hoursRequired: 24,
     relatedOrgan: 'heart',
   },
   {
     id: 'cardiacStressReduced',
-    displayName: 'Cardiac Stress Reduced',
+    displayName: 'Heart Strain Reduced',
     systemName: 'CARDIAC_LOAD_REDUCED',
     description:
-      'Inflammation around your heart muscle is dropping. The oxidative stress that was slowly damaging cardiac tissue is fading.',
+      'Daily strain on your heart is dropping, and your heart muscle is under less pressure.',
     hoursRequired: 168, // 1 week
     relatedOrgan: 'heart',
   },
   {
     id: 'heartAttackRiskDecreased',
-    displayName: 'Heart Attack Risk Decreased',
+    displayName: 'Heart Risk Lowered',
     systemName: 'CARDIAC_RISK_LOWERED',
     description:
-      'Your risk of heart attack has significantly decreased. Arterial walls are healing and blood flow is approaching that of a non-vaper.',
+      'As your blood flow improves, your long-term risk of heart attack keeps going down.',
     hoursRequired: 8760, // 1 year
     relatedOrgan: 'heart',
   },
@@ -67,64 +65,62 @@ export const MILESTONES: RecoveryMilestone[] = [
   // Lung tissue heals more slowly than cardiovascular system
   {
     id: 'bloodOxygenNormalized',
-    displayName: 'Blood Oxygen Normalized',
+    displayName: 'Oxygen Levels Up',
     systemName: 'O2_SATURATION_OPTIMAL',
-    description:
-      'Your blood oxygen levels are returning to normal. Cells throughout your body are receiving the oxygen they were starved of.',
+    description: 'More oxygen reaches your body, helping your cells make energy more efficiently.',
     hoursRequired: 8,
     relatedOrgan: 'lungs',
   },
   {
     id: 'carbonMonoxidePurged',
-    displayName: 'Carbon Monoxide Purged',
+    displayName: 'CO Cleared',
     systemName: 'CO_PURGE_COMPLETE',
     description:
-      'Carbon monoxide has been fully eliminated from your blood. Your hemoglobin can carry oxygen again instead of poison.',
+      'Most carbon monoxide is gone from your blood, so oxygen can move through your body better.',
     hoursRequired: 48, // 2 days for full clearance
     relatedOrgan: 'lungs',
   },
   {
     id: 'bronchialRelaxation',
-    displayName: 'Bronchial Tubes Relaxing',
+    displayName: 'Airways Relaxing',
     systemName: 'BRONCHIAL_TENSION_REDUCED',
-    description:
-      'Your bronchial tubes are relaxing and opening up. Breathing becomes easier as the chemical irritation subsides.',
+    description: 'Your airways are less tight and irritated, so breathing starts to feel easier.',
     hoursRequired: 72, // 3 days
     relatedOrgan: 'lungs',
   },
   {
     id: 'ciliaRegeneration',
-    displayName: 'Cilia Regeneration Started',
+    displayName: 'Lung Filters Rebuild',
     systemName: 'CILIA_REGEN_ACTIVE',
     description:
-      'The tiny hair-like structures in your lungs are regrowing. These cilia sweep out mucus and toxins - vaping destroyed them.',
+      'Tiny filters in your lungs are growing back and starting to clear mucus and trapped particles.',
     hoursRequired: 336, // 2 weeks
     relatedOrgan: 'lungs',
   },
   {
     id: 'mucusClearance',
-    displayName: 'Mucus Clearance Improved',
+    displayName: 'Mucus Clearing Better',
     systemName: 'MUCOCILIARY_FUNCTION_RESTORED',
     description:
-      'Your lungs can now effectively clear mucus and trapped particles. The persistent cough may fade as your airways heal.',
+      'Your lungs clear buildup more effectively, so coughing and chest heaviness may start to ease.',
     hoursRequired: 720, // 1 month
     relatedOrgan: 'lungs',
   },
   {
     id: 'lungCapacityImproved',
-    displayName: 'Lung Capacity Improved',
+    displayName: 'Lung Capacity Up',
     systemName: 'PULMONARY_CAPACITY_RESTORED',
     description:
-      'Significant improvement in lung capacity. Physical activities feel easier and you can take deeper, fuller breaths.',
+      'Your lungs can use more air, so activity may feel easier and breaths feel deeper.',
     hoursRequired: 2160, // 3 months
     relatedOrgan: 'lungs',
   },
   {
     id: 'lungInflammationReduced',
-    displayName: 'Lung Inflammation Reduced',
+    displayName: 'Lung Irritation Down',
     systemName: 'PULMONARY_INFLAMMATION_DOWN',
     description:
-      'Chronic lung inflammation has substantially decreased. The scarring and irritation from vaping aerosols is healing.',
+      'Long-term irritation in your lungs is going down as damaged tissue keeps healing.',
     hoursRequired: 6480, // 9 months
     relatedOrgan: 'lungs',
   },
@@ -135,7 +131,7 @@ export const MILESTONES: RecoveryMilestone[] = [
     displayName: 'Nicotine Cleared',
     systemName: 'NICOTINE_FLUSH_COMPLETE',
     description:
-      'Nicotine has been fully flushed from your system. Your brain is rewiring its dopamine pathways - withdrawal peaks now but fades fast.',
+      'Nicotine is out of your system, and strong withdrawal symptoms usually start easing after this point.',
     hoursRequired: 72,
     relatedOrgan: 'bloodVessels',
   },
@@ -144,7 +140,7 @@ export const MILESTONES: RecoveryMilestone[] = [
     displayName: 'Circulation Improving',
     systemName: 'VASCULAR_FLOW_IMPROVING',
     description:
-      'Blood vessel walls are repairing. Endothelial function improves as nitric oxide production normalizes, meaning better blood flow everywhere.',
+      'Your blood vessels are repairing, which helps blood move more smoothly through your body.',
     hoursRequired: 336, // 2 weeks
     relatedOrgan: 'bloodVessels',
   },
@@ -153,7 +149,7 @@ export const MILESTONES: RecoveryMilestone[] = [
     displayName: 'Circulation Restored',
     systemName: 'VASCULAR_FLOW_OPTIMAL',
     description:
-      'Vascular function is approaching normal. The toxic sludge that was increasing permeability and clot risk has been cleared.',
+      'Your circulation is close to normal, supporting better energy, healing, and overall function.',
     hoursRequired: 2160, // 3 months
     relatedOrgan: 'bloodVessels',
   },
