@@ -2,16 +2,25 @@
  * User Store - Main state for user profile and recovery tracking
  */
 
-import { OrganType } from '@/constants/milestones'
+import { OrganType, MILESTONES, isMilestoneAchieved } from '@/constants/milestones'
 import { asyncStorageAdapter } from '@/utils/asyncStorageAdapter'
 import {
   calculateInitialDamage,
+  calculateNeuralReset,
   calculateOrganRecovery,
+  calculateOxygenEfficiency,
   calculateSystemIntegrity,
+  calculateToxinClearance,
   formatTimeSinceQuit,
   getCurrentMilestoneProgress,
   MilestoneProgress,
 } from '@/utils/recoveryCalculator'
+import {
+  scheduleAllUpcomingMilestones,
+  scheduleDailyReminder,
+  scheduleInactivityWarning,
+  rescheduleAfterRelapse,
+} from '@/utils/notifications'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
@@ -31,12 +40,14 @@ interface UserState {
   initialDamageScore: number
   hasCompletedOnboarding: boolean
   costPerPuff: number
+  celebratedMilestoneIds: string[]
 
   // Actions
   completeOnboarding: (data: OnboardingData) => void
   recordRelapse: () => void
   resetProgress: () => void
   clearData: () => void
+  markMilestoneCelebrated: (milestoneId: string) => void
 
   // Computed (called as functions since Zustand doesn't have native getters)
   getRecoveryStartDate: () => Date
@@ -50,6 +61,10 @@ interface UserState {
   getLungRecovery: () => number
   getHeartRecovery: () => number
   getCurrentMilestone: () => MilestoneProgress
+  getOxygenEfficiency: () => number
+  getToxinClearance: () => number
+  getNeuralReset: () => number
+  getNewlyAchievedMilestones: () => typeof MILESTONES
 }
 
 export const useUserStore = create<UserState>()(
@@ -64,6 +79,7 @@ export const useUserStore = create<UserState>()(
       initialDamageScore: 0.5,
       hasCompletedOnboarding: false,
       costPerPuff: 0.02, // Default ~$0.02 per puff
+      celebratedMilestoneIds: [],
 
       // Actions
       completeOnboarding: (data: OnboardingData) => {
@@ -73,26 +89,43 @@ export const useUserStore = create<UserState>()(
           data.puffsPerDay,
         )
 
+        const quitDate = new Date()
+
         set({
           vapingDurationMonths: data.vapingDurationMonths,
           nicotineStrength: data.nicotineStrength,
           puffsPerDay: data.puffsPerDay,
-          quitDate: new Date().toISOString(),
+          quitDate: quitDate.toISOString(),
           lastVapeDate: null,
           initialDamageScore: damageScore,
           hasCompletedOnboarding: true,
+          celebratedMilestoneIds: [],
         })
+
+        // Schedule notifications for all upcoming milestones
+        scheduleAllUpcomingMilestones(quitDate).catch(() => {})
+        scheduleDailyReminder().catch(() => {})
+        scheduleInactivityWarning().catch(() => {})
       },
 
       recordRelapse: () => {
-        set({ lastVapeDate: new Date().toISOString() })
+        const now = new Date()
+        set({ lastVapeDate: now.toISOString(), celebratedMilestoneIds: [] })
+
+        // Reschedule all notifications from the new start date
+        rescheduleAfterRelapse(now).catch(() => {})
       },
 
       resetProgress: () => {
+        const now = new Date()
         set({
-          quitDate: new Date().toISOString(),
+          quitDate: now.toISOString(),
           lastVapeDate: null,
+          celebratedMilestoneIds: [],
         })
+
+        // Reschedule notifications
+        rescheduleAfterRelapse(now).catch(() => {})
       },
 
       clearData: () => {
@@ -105,7 +138,15 @@ export const useUserStore = create<UserState>()(
           initialDamageScore: 0.5,
           hasCompletedOnboarding: false,
           costPerPuff: 0.02,
+          celebratedMilestoneIds: [],
         })
+      },
+
+      markMilestoneCelebrated: (milestoneId: string) => {
+        const state = get()
+        if (!state.celebratedMilestoneIds.includes(milestoneId)) {
+          set({ celebratedMilestoneIds: [...state.celebratedMilestoneIds, milestoneId] })
+        }
       },
 
       // Computed
@@ -117,7 +158,8 @@ export const useUserStore = create<UserState>()(
 
       getTimeSinceQuit: () => {
         const recoveryStart = get().getRecoveryStartDate()
-        return Date.now() - recoveryStart.getTime()
+        const ms = Date.now() - recoveryStart.getTime()
+        return isNaN(ms) || ms < 0 ? 0 : ms
       },
 
       getHoursSinceQuit: () => {
@@ -158,6 +200,26 @@ export const useUserStore = create<UserState>()(
 
       getCurrentMilestone: () => {
         return getCurrentMilestoneProgress(get().getHoursSinceQuit())
+      },
+
+      getOxygenEfficiency: () => {
+        return calculateOxygenEfficiency(get().getHoursSinceQuit())
+      },
+
+      getToxinClearance: () => {
+        return calculateToxinClearance(get().getHoursSinceQuit())
+      },
+
+      getNeuralReset: () => {
+        return calculateNeuralReset(get().getHoursSinceQuit())
+      },
+
+      getNewlyAchievedMilestones: () => {
+        const state = get()
+        const hours = state.getHoursSinceQuit()
+        return MILESTONES.filter(
+          (m) => isMilestoneAchieved(m, hours) && !state.celebratedMilestoneIds.includes(m.id),
+        )
       },
     }),
     {

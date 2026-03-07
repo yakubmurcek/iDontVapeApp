@@ -11,6 +11,11 @@ export const Colors = {
   // Health/Recovery
   neonCyan: '#00F0FF',
   healthGreen: '#00FF88',
+  holoCore: 'rgba(0, 240, 255, 0.2)',
+  holoGlow: 'rgba(0, 240, 255, 0.6)',
+  holoDim: 'rgba(0, 240, 255, 0.12)',
+  scanRing: '#42F5FF',
+  scanSweep: 'rgba(66, 245, 255, 0.8)',
 
   // UI/Data
   dataBlue: '#4D9EFF',
@@ -19,6 +24,7 @@ export const Colors = {
   cautionAmber: '#FFB800',
   criticalRed: '#FF3B3B',
   damageOrange: '#FF6B35',
+  damageGlow: 'rgba(255, 59, 59, 0.75)',
 
   // Text
   white: '#FFFFFF',

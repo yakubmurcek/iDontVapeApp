@@ -9,7 +9,7 @@ import { Colors } from '@/constants/Colors'
 import { useRouter } from 'expo-router'
 import { Heart } from 'lucide-react-native'
 import React, { useEffect, useState } from 'react'
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
@@ -18,6 +18,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function WelcomeStep() {
   const router = useRouter()
@@ -39,8 +40,7 @@ export default function WelcomeStep() {
       -1,
       true,
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [scale])
 
   const animatedHeartStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
