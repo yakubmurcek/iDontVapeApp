@@ -123,22 +123,28 @@ export default function LogsView() {
 
   // Group logs by date
   const groupedLogs = useMemo(() => {
-    const groups: { [key: string]: VapingLog[] } = {}
+    const groups = new Map<string, { logs: VapingLog[]; sortKey: number }>()
 
     for (const log of logs) {
-      const dateKey = new Date(log.timestamp).toDateString()
-      if (!groups[dateKey]) {
-        groups[dateKey] = []
+      const date = new Date(log.timestamp)
+      const dateKey = date.toDateString()
+      const group = groups.get(dateKey)
+      if (!group) {
+        groups.set(dateKey, {
+          logs: [log],
+          sortKey: date.getTime(),
+        })
+      } else {
+        group.logs.push(log)
       }
-      groups[dateKey].push(log)
     }
 
     // Sort by date descending
-    return Object.entries(groups)
-      .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-      .map(([dateKey, logs]) => ({
-        date: logs[0].timestamp,
-        logs,
+    return Array.from(groups.values())
+      .sort((a, b) => b.sortKey - a.sortKey)
+      .map((group) => ({
+        date: group.logs[0].timestamp,
+        logs: group.logs,
       }))
   }, [logs])
 
