@@ -13,8 +13,8 @@ import {
 } from '@/constants/milestones'
 
 // Recovery time constants (in hours)
-const MAX_RECOVERY_HOURS = 8760 // 1 year for "full" recovery display
-const ORGAN_RECOVERY_HOURS: Record<OrganType, number> = {
+export const MAX_RECOVERY_HOURS = 8760 // 1 year for "full" recovery display
+export const ORGAN_RECOVERY_HOURS: Record<OrganType, number> = {
   heart: 2160, // 3 months for significant cardiac benefits
   lungs: 8760, // 1 year for full lung tissue recovery
   bloodVessels: 4320, // 6 months for circulation restoration
@@ -29,11 +29,11 @@ const WEIGHT_NICOTINE = 0.25 // concentration third
 const DAMAGE_CURVE_EXPONENT = 0.7
 
 // Clamp initial damage so the UI always shows meaningful progress
-const MIN_DAMAGE_SCORE = 0.15
-const MAX_DAMAGE_SCORE = 0.85
+export const MIN_DAMAGE_SCORE = 0.15
+export const MAX_DAMAGE_SCORE = 0.85
 
 // What fraction of initial damage can be recovered over time
-const MAX_RECOVERABLE_FRACTION = 0.8
+export const MAX_RECOVERABLE_FRACTION = 0.8
 
 // Organ recovery blending (milestone completion vs. elapsed time)
 const ORGAN_MILESTONE_WEIGHT = 0.5
