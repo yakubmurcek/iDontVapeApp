@@ -13,7 +13,7 @@ import {
 } from '@/constants/milestones'
 
 // Recovery time constants (in hours)
-const HOURS_PER_MONTH = 720
+
 const MAX_RECOVERY_HOURS = 8760 // 1 year for "full" recovery display
 const ORGAN_RECOVERY_HOURS: Record<OrganType, number> = {
   heart: 2160, // 3 months for significant cardiac benefits

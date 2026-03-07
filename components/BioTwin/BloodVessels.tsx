@@ -47,8 +47,7 @@ export function BloodVessels({ recoveryProgress, width = 200, height = 250 }: Bl
       -1,
       true,
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [pulseOpacity])
 
   const pulseAnimatedProps = useAnimatedProps(() => ({
     opacity: pulseOpacity.value,

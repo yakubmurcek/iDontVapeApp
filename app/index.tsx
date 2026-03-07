@@ -2,28 +2,31 @@
  * Index - Entry point that redirects based on onboarding status
  */
 
-import { useEffect, useState } from 'react'
-import { Redirect } from 'expo-router'
-import { View, ActivityIndicator, StyleSheet } from 'react-native'
-import { useUserStore } from '@/store/userStore'
 import { Colors } from '@/constants/Colors'
+import { useUserStore } from '@/store/userStore'
+import { Redirect } from 'expo-router'
+import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
 
 export default function Index() {
   const [isHydrated, setIsHydrated] = useState(false)
   const hasCompletedOnboarding = useUserStore((state) => state.hasCompletedOnboarding)
 
   useEffect(() => {
-    // Wait for store to hydrate from storage
+    // If already hydrated before effect runs
+    if (useUserStore.persist.hasHydrated()) {
+      setIsHydrated(true)
+      return
+    }
+
+    // Otherwise wait for hydration to finish
     const unsubscribe = useUserStore.persist.onFinishHydration(() => {
       setIsHydrated(true)
     })
 
-    // If already hydrated
-    if (useUserStore.persist.hasHydrated()) {
-      setIsHydrated(true)
+    return () => {
+      unsubscribe()
     }
-
-    return unsubscribe
   }, [])
 
   // Show loading while hydrating

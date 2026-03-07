@@ -62,8 +62,7 @@ export function Heart({ recoveryProgress, width = 80, height = 80 }: HeartProps)
       -1,
       false,
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [heartbeatScale, recoveryProgress])
 
   const animatedProps = useAnimatedProps(() => ({
     transform: [

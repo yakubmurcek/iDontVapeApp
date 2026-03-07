@@ -7,12 +7,25 @@ import { StateStorage } from 'zustand/middleware'
 
 export const asyncStorageAdapter: StateStorage = {
   setItem: async (name, value) => {
-    await AsyncStorage.setItem(name, value)
+    try {
+      await AsyncStorage.setItem(name, value)
+    } catch (e) {
+      console.warn(`Error setting async storage for key ${name}:`, e)
+    }
   },
   getItem: async (name) => {
-    return await AsyncStorage.getItem(name)
+    try {
+      return await AsyncStorage.getItem(name)
+    } catch (e) {
+      console.warn(`Error getting async storage for key ${name}:`, e)
+      return null
+    }
   },
   removeItem: async (name) => {
-    await AsyncStorage.removeItem(name)
+    try {
+      await AsyncStorage.removeItem(name)
+    } catch (e) {
+      console.warn(`Error removing async storage for key ${name}:`, e)
+    }
   },
 }

@@ -99,8 +99,7 @@ export function SliderInput({
     translateX.value = withSpring(newProgress * (SLIDER_WIDTH - THUMB_SIZE), {
       damping: 20,
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, min, max, scale, customValueToPosition])
+  }, [value, min, max, scale, customValueToPosition, translateX])
 
   const updateValue = (x: number) => {
     const clampedX = Math.max(0, Math.min(x, SLIDER_WIDTH - THUMB_SIZE))
