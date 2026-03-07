@@ -13,13 +13,31 @@ import {
 } from '@/constants/milestones'
 
 // Recovery time constants (in hours)
-const HOURS_PER_MONTH = 720
 const MAX_RECOVERY_HOURS = 8760 // 1 year for "full" recovery display
 const ORGAN_RECOVERY_HOURS: Record<OrganType, number> = {
   heart: 2160, // 3 months for significant cardiac benefits
   lungs: 8760, // 1 year for full lung tissue recovery
   bloodVessels: 4320, // 6 months for circulation restoration
 }
+
+// Damage calculation weights (must sum to 1.0)
+const WEIGHT_DURATION = 0.4 // long-term exposure has highest impact
+const WEIGHT_PUFFS = 0.35 // daily volume second
+const WEIGHT_NICOTINE = 0.25 // concentration third
+
+// Curve exponent: < 1 makes moderate usage show more significant damage
+const DAMAGE_CURVE_EXPONENT = 0.7
+
+// Clamp initial damage so the UI always shows meaningful progress
+const MIN_DAMAGE_SCORE = 0.15
+const MAX_DAMAGE_SCORE = 0.85
+
+// What fraction of initial damage can be recovered over time
+const MAX_RECOVERABLE_FRACTION = 0.8
+
+// Organ recovery blending (milestone completion vs. elapsed time)
+const ORGAN_MILESTONE_WEIGHT = 0.5
+const ORGAN_TIME_WEIGHT = 0.5
 
 /**
  * Calculate initial damage score based on vaping history
@@ -42,16 +60,14 @@ export function calculateInitialDamage(
   const puffsFactor = Math.min(puffsPerDay / 500.0, 1.0)
 
   // Weighted combination
-  // Duration has highest weight (long-term damage accumulates)
-  // Puffs second (daily exposure)
-  // Nicotine third (concentration)
-  const weightedScore = durationFactor * 0.4 + puffsFactor * 0.35 + nicotineFactor * 0.25
+  const weightedScore =
+    durationFactor * WEIGHT_DURATION + puffsFactor * WEIGHT_PUFFS + nicotineFactor * WEIGHT_NICOTINE
 
   // Apply a curve to make moderate usage still show significant damage
-  const curvedScore = Math.pow(weightedScore, 0.7)
+  const curvedScore = Math.pow(weightedScore, DAMAGE_CURVE_EXPONENT)
 
-  // Ensure minimum damage of 15% and maximum of 85%
-  return Math.max(0.15, Math.min(0.85, curvedScore))
+  // Clamp to meaningful display range
+  return Math.max(MIN_DAMAGE_SCORE, Math.min(MAX_DAMAGE_SCORE, curvedScore))
 }
 
 /**
@@ -72,8 +88,7 @@ export function calculateSystemIntegrity(initialDamage: number, hoursSinceQuit: 
   }
 
   // Current damage = initial damage reduced by recovery progress
-  // Recovery can repair up to 80% of the damage over time
-  const maxRecoverable = initialDamage * 0.8
+  const maxRecoverable = initialDamage * MAX_RECOVERABLE_FRACTION
   const currentDamage = initialDamage - maxRecoverable * recoveryProgress
 
   // System integrity is inverse of damage
@@ -140,17 +155,59 @@ export function calculateOrganRecovery(
   const timeProgress =
     hoursSinceQuit <= 0 ? 0 : Math.min(1, Math.log(hoursSinceQuit + 1) / Math.log(maxHours + 1))
 
-  // Combined progress (50% milestones, 50% time)
-  const combinedProgress = milestoneWeight * 0.5 + timeProgress * 0.5
+  // Combined progress
+  const combinedProgress =
+    milestoneWeight * ORGAN_MILESTONE_WEIGHT + timeProgress * ORGAN_TIME_WEIGHT
 
-  // Recovery can repair up to 80% of the damage
-  const maxRecoverable = initialDamage * 0.8
+  const maxRecoverable = initialDamage * MAX_RECOVERABLE_FRACTION
   const currentDamage = initialDamage - maxRecoverable * combinedProgress
 
   // Return recovery score (inverse of damage)
   const recovery = 1 - currentDamage
 
   return Math.min(1.0, Math.max(0.0, recovery))
+}
+
+/**
+ * Calculate Oxygen Efficiency based on hours since quit
+ * Recovers significantly within 48-72 hours
+ * @returns 0-1 score (1 = 100% efficiency)
+ */
+export function calculateOxygenEfficiency(hoursSinceQuit: number): number {
+  if (hoursSinceQuit <= 0) return 0.7 // Start at 70% efficiency (impaired)
+
+  // Quick recovery curve - reaches near 100% in 72 hours
+  const recovery = Math.min(1, hoursSinceQuit / 72)
+
+  // Scale from 0.7 to 1.0
+  return 0.7 + 0.3 * recovery
+}
+
+/**
+ * Calculate Toxin Clearance (CO levels)
+ * CO leaves the body completely in ~24 hours
+ * @returns 0-1 score (1 = fully cleared)
+ */
+export function calculateToxinClearance(hoursSinceQuit: number): number {
+  if (hoursSinceQuit <= 0) return 0
+
+  // Linear clearance over 24 hours
+  return Math.min(1, hoursSinceQuit / 24)
+}
+
+/**
+ * Calculate Neural Reset (Nicotine Receptors)
+ * Takes about 3-4 weeks (504-672 hours) to downregulate
+ * @returns 0-1 score (1 = fully reset)
+ */
+export function calculateNeuralReset(hoursSinceQuit: number): number {
+  if (hoursSinceQuit <= 0) return 0
+
+  // Logarithmic recovery over ~4 weeks (672 hours)
+  const percentComplete = Math.min(1, hoursSinceQuit / 672)
+
+  // Non-linear feeling - starts slow, speeds up
+  return Math.pow(percentComplete, 1.2)
 }
 
 /**
