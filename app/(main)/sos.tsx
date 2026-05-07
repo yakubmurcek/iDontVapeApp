@@ -214,7 +214,7 @@ export default function SOSView() {
     // Pass personalized params so Superwall can interpolate them into paywall
     // copy ("You've resisted 3 cravings and saved $X").
     if (cravingResistCount + 1 === 3) {
-      registerPlacement({
+      void registerPlacement({
         placement: PAYWALL_PLACEMENTS.resistMilestone,
         params: {
           resist_count: cravingResistCount + 1,

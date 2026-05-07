@@ -130,7 +130,7 @@ export default function Dashboard() {
     if (daysSinceQuit >= 3 && canShowPaywallToday()) {
       recordPaywallShown()
       const timer = setTimeout(() => {
-        registerPlacement({
+        void registerPlacement({
           placement: PAYWALL_PLACEMENTS.campaignTrigger,
           params: {
             days_clean: daysSinceQuit,
@@ -158,7 +158,7 @@ export default function Dashboard() {
   // Keep widget payload fresh whenever the dashboard is visited or time ticks.
   // No-op until native widgets are wired (see utils/widgetData.ts).
   useEffect(() => {
-    refreshWidget()
+    void refreshWidget()
   }, [tick])
 
   const handleCelebrationDismiss = useCallback(() => {
@@ -166,7 +166,7 @@ export default function Dashboard() {
       markMilestoneCelebrated(celebratingMilestone.id)
 
       // Show paywall after milestone celebration (always allowed, even if already shown today)
-      registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
+      void registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
       recordPaywallShown()
     }
 

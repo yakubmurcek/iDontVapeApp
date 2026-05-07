@@ -84,7 +84,7 @@ export default function RelapseFlow() {
     // the user likely wants help breaking.
     if (previousRelapseCount >= 1 && canShowPaywallToday()) {
       recordPaywallShown()
-      registerPlacement({
+      void registerPlacement({
         placement: PAYWALL_PLACEMENTS.relapseCycle,
         params: {
           relapse_count: previousRelapseCount + 1,

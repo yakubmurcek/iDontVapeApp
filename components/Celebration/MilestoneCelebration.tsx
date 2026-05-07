@@ -43,7 +43,7 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
   const damageOpacity = useSharedValue(1)
 
   const triggerHaptic = useCallback(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
   }, [])
 
   useEffect(() => {
@@ -59,12 +59,12 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
 
     // Phase 1: Scanning (0-2s)
     scanLineY.value = withTiming(1, { duration: 2000, easing: Easing.linear })
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
 
     // Phase 2: Repairing (2-4.5s)
     const repairTimer = setTimeout(() => {
       setPhase('repairing')
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
       damageOpacity.value = withTiming(0, { duration: 2000 })
       repairProgress.value = withTiming(1, { duration: 2500, easing: Easing.out(Easing.cubic) })
       glowIntensity.value = withSequence(

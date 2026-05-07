@@ -72,7 +72,7 @@ export default function OrganDeepDive() {
 
   const handleBack = useCallback(() => {
     if (canShowPaywallToday()) {
-      registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
+      void registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
       recordPaywallShown()
     }
     router.back()
