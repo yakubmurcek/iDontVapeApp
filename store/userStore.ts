@@ -15,6 +15,7 @@ import {
   getCurrentMilestoneProgress,
   MilestoneProgress,
 } from '@/utils/recoveryCalculator'
+import { calculateMoneySaved } from '@/utils/money'
 import { rescheduleAfterRelapse } from '@/utils/notifications'
 import { initializeNotificationBootstrap } from '@/utils/notificationBootstrap'
 import { useScanStore } from '@/store/scanStore'
@@ -219,8 +220,7 @@ export const useUserStore = create<UserState>()(
 
       getMoneySaved: () => {
         const state = get()
-        const puffsAvoided = state.getDaysSinceQuit() * state.puffsPerDay
-        return puffsAvoided * state.costPerPuff
+        return calculateMoneySaved(state.getTimeSinceQuit(), state.puffsPerDay, state.costPerPuff)
       },
 
       getFormattedTimeSinceQuit: () => {
