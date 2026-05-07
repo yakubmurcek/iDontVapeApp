@@ -124,7 +124,10 @@ export default function Dashboard() {
   // Record "shown for today" BEFORE the timer so a fast remount (navigate away and
   // back within 3s) can't schedule two placements — the second mount sees the gate
   // closed. We accept that a user who bounces off in <3s just misses today's paywall.
-  // Pass personalized params so Superwall can interpolate them into copy.
+  //
+  // Depends on `tick` so a user who keeps the dashboard open across the day 2 → 3
+  // transition still sees the placement on the next minute tick. canShowPaywallToday()
+  // and recordPaywallShown() make subsequent ticks idempotent within the same day.
   useEffect(() => {
     const daysSinceQuit = getDaysSinceQuit()
     if (daysSinceQuit >= 3 && canShowPaywallToday()) {
@@ -142,7 +145,7 @@ export default function Dashboard() {
       return () => clearTimeout(timer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [tick])
 
   // Check for newly achieved milestones. Depend on `tick` so that a milestone
   // rolling over while the dashboard stays open still fires a celebration.
@@ -164,10 +167,6 @@ export default function Dashboard() {
   const handleCelebrationDismiss = useCallback(() => {
     if (celebratingMilestone) {
       markMilestoneCelebrated(celebratingMilestone.id)
-
-      // Show paywall after milestone celebration (always allowed, even if already shown today)
-      void registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
-      recordPaywallShown()
     }
 
     // Show next pending celebration or close
@@ -178,6 +177,12 @@ export default function Dashboard() {
     } else {
       setPendingCelebrations([])
       setCelebratingMilestone(null)
+      // Earned-context paywall fires once at the end of the celebration queue.
+      // Firing on every dismissal would stack N paywalls on a binge-open user
+      // (e.g. someone who returns after a long absence with several milestones
+      // earned at once) — that lands as upsell-spam during a vulnerable moment.
+      void registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
+      recordPaywallShown()
     }
   }, [
     celebratingMilestone,
@@ -237,12 +242,12 @@ export default function Dashboard() {
 
   const handleReset = () => {
     Alert.alert(
-      'Reset App',
-      'Are you sure you want to reset all data? This will clear your profile and logs.',
+      'Erase all data and start over?',
+      'This permanently deletes your quit date, recovery progress, logs, scans, and settings. You will be returned to onboarding. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Reset',
+          text: 'Erase Everything',
           style: 'destructive',
           onPress: async () => {
             await resetAppData()
