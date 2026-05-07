@@ -38,15 +38,36 @@ export default function RootLayout() {
       return iso ? new Date(iso) : null
     }
 
-    const settings = useSettingsStore.getState()
-    initializeNotificationBootstrap({
-      notificationsEnabled: settings.notificationsEnabled,
-      dailyReminderTime: settings.dailyReminderTime,
-      quitDate: readQuitDate(),
-    }).catch(() => {})
+    // Cold-start bootstrap must wait for AsyncStorage rehydration of *both*
+    // stores. Reading them synchronously here returns the in-memory defaults
+    // (notificationsEnabled=false, quitDate=null), so milestones/anniversaries
+    // would silently never schedule until the user toggled notifications.
+    let bootstrapRan = false
+    const runInitialBootstrap = () => {
+      if (bootstrapRan) return
+      if (!useUserStore.persist.hasHydrated()) return
+      if (!useSettingsStore.persist.hasHydrated()) return
+      bootstrapRan = true
 
-    // Re-bootstrap when the user toggles notifications on; cancel everything when they toggle off.
+      const settings = useSettingsStore.getState()
+      initializeNotificationBootstrap({
+        notificationsEnabled: settings.notificationsEnabled,
+        dailyReminderTime: settings.dailyReminderTime,
+        quitDate: readQuitDate(),
+      }).catch(() => {})
+    }
+
+    // Warm path: both stores were already hydrated by the time this effect ran
+    // (e.g. layout remount within the same JS lifetime).
+    runInitialBootstrap()
+    const unsubUserHydration = useUserStore.persist.onFinishHydration(runInitialBootstrap)
+    const unsubSettingsHydration = useSettingsStore.persist.onFinishHydration(runInitialBootstrap)
+
+    // User-driven settings changes only. Gated on `bootstrapRan` so the
+    // hydration-driven default→persisted transition (which looks like a
+    // user toggle to subscribe listeners) doesn't double-fire the bootstrap.
     const unsubscribe = useSettingsStore.subscribe((state, prev) => {
+      if (!bootstrapRan) return
       const turnedOn = state.notificationsEnabled && !prev.notificationsEnabled
       const turnedOff = !state.notificationsEnabled && prev.notificationsEnabled
       const timeChanged =
@@ -77,6 +98,8 @@ export default function RootLayout() {
 
     return () => {
       responseListener.current?.remove()
+      unsubUserHydration()
+      unsubSettingsHydration()
       unsubscribe()
     }
   }, [router])
