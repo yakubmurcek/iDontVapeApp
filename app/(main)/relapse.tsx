@@ -129,6 +129,8 @@ export default function RelapseFlow() {
           <TouchableOpacity
             onPress={close}
             style={styles.closeButton}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
           >
             <X
               size={22}

@@ -197,6 +197,8 @@ export default function ScanScreen() {
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.closeButton}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
         >
           <X
             size={24}
