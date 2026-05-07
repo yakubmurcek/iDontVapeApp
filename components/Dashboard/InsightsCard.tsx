@@ -12,6 +12,7 @@
 
 import { Card } from '@/components/ui/Card'
 import { Colors } from '@/constants/Colors'
+import { PAYWALL_PLACEMENTS } from '@/constants/paywallPlacements'
 import { useLogsStore } from '@/store/logsStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
@@ -49,7 +50,7 @@ export function InsightsCard() {
     // is an explicit conversion intent. We still record the show so other
     // auto-triggers respect the daily cap.
     registerPlacement({
-      placement: 'insights_unlock',
+      placement: PAYWALL_PLACEMENTS.insightsUnlock,
       params: {
         locked_insight_count: locked.length,
         days_clean: getDaysSinceQuit(),

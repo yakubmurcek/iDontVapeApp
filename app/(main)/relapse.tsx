@@ -12,6 +12,7 @@
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Colors } from '@/constants/Colors'
+import { PAYWALL_PLACEMENTS } from '@/constants/paywallPlacements'
 import { CravingTrigger, CRAVING_TRIGGERS, useLogsStore } from '@/store/logsStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
@@ -84,7 +85,7 @@ export default function RelapseFlow() {
     if (previousRelapseCount >= 1 && canShowPaywallToday()) {
       recordPaywallShown()
       registerPlacement({
-        placement: 'relapse_cycle',
+        placement: PAYWALL_PLACEMENTS.relapseCycle,
         params: {
           relapse_count: previousRelapseCount + 1,
           last_trigger: context.trigger ?? 'unknown',

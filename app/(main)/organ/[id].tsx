@@ -13,6 +13,7 @@ import {
   isMilestoneAchieved,
   OrganType,
 } from '@/constants/milestones'
+import { PAYWALL_PLACEMENTS } from '@/constants/paywallPlacements'
 import { getOrganData } from '@/constants/organData'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
@@ -71,7 +72,7 @@ export default function OrganDeepDive() {
 
   const handleBack = useCallback(() => {
     if (canShowPaywallToday()) {
-      registerPlacement({ placement: 'campaign_trigger' })
+      registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
       recordPaywallShown()
     }
     router.back()
