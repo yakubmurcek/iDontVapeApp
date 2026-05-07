@@ -49,7 +49,7 @@ export function InsightsCard() {
     // don't gate it behind `canShowPaywallToday` — a user tapping the lock
     // is an explicit conversion intent. We still record the show so other
     // auto-triggers respect the daily cap.
-    registerPlacement({
+    void registerPlacement({
       placement: PAYWALL_PLACEMENTS.insightsUnlock,
       params: {
         locked_insight_count: locked.length,

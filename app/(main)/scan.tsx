@@ -116,7 +116,7 @@ export default function ScanScreen() {
     }
 
     // Start scan animation
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     scanProgress.value = withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) })
     scanPulse.value = withRepeat(
       withSequence(withTiming(1.05, { duration: 500 }), withTiming(0.95, { duration: 500 })),
@@ -138,9 +138,9 @@ export default function ScanScreen() {
       const result = performScan(metrics)
       setScanResult(result)
       setPhase('results')
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       // Scan completion is the highest-value moment to refresh the widget.
-      refreshWidget()
+      void refreshWidget()
       if (notificationsEnabled) {
         scheduleInactivityWarning().catch((e) => {
           if (__DEV__) console.error('[notifications] inactivity warning failed:', e)
@@ -156,7 +156,7 @@ export default function ScanScreen() {
       // to show a paywall that emphasizes the freeze entitlement. Still respects
       // the daily cap since this auto-triggers without explicit intent.
       if (result.freezeConsumed && canShowPaywallToday()) {
-        registerPlacement({
+        void registerPlacement({
           placement: PAYWALL_PLACEMENTS.streakSaved,
           params: {
             streak: result.streak,
