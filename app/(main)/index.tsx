@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
 import { RecoveryMilestone } from '@/constants/milestones'
+import { PAYWALL_PLACEMENTS } from '@/constants/paywallPlacements'
 import { useScanStore } from '@/store/scanStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
@@ -130,7 +131,7 @@ export default function Dashboard() {
       recordPaywallShown()
       const timer = setTimeout(() => {
         registerPlacement({
-          placement: 'campaign_trigger',
+          placement: PAYWALL_PLACEMENTS.campaignTrigger,
           params: {
             days_clean: daysSinceQuit,
             money_saved: Math.round(getMoneySaved() * 100) / 100,
@@ -165,7 +166,7 @@ export default function Dashboard() {
       markMilestoneCelebrated(celebratingMilestone.id)
 
       // Show paywall after milestone celebration (always allowed, even if already shown today)
-      registerPlacement({ placement: 'campaign_trigger' })
+      registerPlacement({ placement: PAYWALL_PLACEMENTS.campaignTrigger })
       recordPaywallShown()
     }
 

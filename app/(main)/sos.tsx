@@ -5,6 +5,7 @@
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Colors } from '@/constants/Colors'
+import { PAYWALL_PLACEMENTS } from '@/constants/paywallPlacements'
 import {
   CravingTrigger,
   CRAVING_TRIGGERS,
@@ -214,7 +215,7 @@ export default function SOSView() {
     // copy ("You've resisted 3 cravings and saved $X").
     if (cravingResistCount + 1 === 3) {
       registerPlacement({
-        placement: 'resist_milestone',
+        placement: PAYWALL_PLACEMENTS.resistMilestone,
         params: {
           resist_count: cravingResistCount + 1,
           days_clean: getDaysSinceQuit(),

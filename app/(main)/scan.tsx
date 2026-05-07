@@ -4,6 +4,7 @@
 
 import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
+import { PAYWALL_PLACEMENTS } from '@/constants/paywallPlacements'
 import { ScanMetrics, ScanResult, useScanStore } from '@/store/scanStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
@@ -156,7 +157,7 @@ export default function ScanScreen() {
       // the daily cap since this auto-triggers without explicit intent.
       if (result.freezeConsumed && canShowPaywallToday()) {
         registerPlacement({
-          placement: 'streak_saved',
+          placement: PAYWALL_PLACEMENTS.streakSaved,
           params: {
             streak: result.streak,
             days_clean: getDaysSinceQuit(),
