@@ -143,6 +143,8 @@ export default function OrganDeepDive() {
           <TouchableOpacity
             onPress={handleBack}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
           >
             <ArrowLeft
               size={24}

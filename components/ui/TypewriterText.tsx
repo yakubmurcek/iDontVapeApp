@@ -36,7 +36,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   const [isTyping, setIsTyping] = useState(false)
   const [hasCompleted, setHasCompleted] = useState(false)
   const cursorOpacity = useSharedValue(0)
-  const flatStyle = flattenStyle(style)
+  const flatStyle = StyleSheet.flatten(style)
 
   // Cursor animation
   useEffect(() => {
@@ -166,14 +166,6 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
       </View>
     </View>
   )
-}
-
-// Helper to extract fontSize if possible to size cursor appropriately
-const flattenStyle = (style: StyleProp<TextStyle>): TextStyle | undefined => {
-  if (!style) return undefined
-  // This is a naive check; React Native's StyleSheet.flatten is better but we can't import it easily inside specific environments consistently without extra checks,
-  // but StyleSheet.flatten IS standard.
-  return StyleSheet.flatten(style)
 }
 
 const styles = StyleSheet.create({

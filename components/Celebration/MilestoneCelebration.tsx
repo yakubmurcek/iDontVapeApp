@@ -15,7 +15,6 @@ import Animated, {
   FadeIn,
   FadeInDown,
   FadeInUp,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -76,7 +75,9 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
     // Phase 3: Complete (4.5s+)
     const completeTimer = setTimeout(() => {
       setPhase('complete')
-      runOnJS(triggerHaptic)()
+      // setTimeout callback already runs on the JS thread; runOnJS is for
+      // bridging from Reanimated worklets, which doesn't apply here.
+      triggerHaptic()
     }, 4500)
 
     return () => {
