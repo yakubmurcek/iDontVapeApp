@@ -49,6 +49,14 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
   useEffect(() => {
     if (!milestone) return
 
+    // Reset phase and animated values so back-to-back milestones replay from scratch
+    // instead of jumping to the "complete" frame of the previous run.
+    setPhase('scanning')
+    scanLineY.value = 0
+    damageOpacity.value = 1
+    repairProgress.value = 0
+    glowIntensity.value = 0
+
     // Phase 1: Scanning (0-2s)
     scanLineY.value = withTiming(1, { duration: 2000, easing: Easing.linear })
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -101,6 +109,7 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
       animationType="fade"
       transparent
       statusBarTranslucent
+      onRequestClose={onDismiss}
     >
       <View style={styles.overlay}>
         <View style={styles.container}>

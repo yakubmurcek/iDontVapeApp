@@ -15,12 +15,10 @@ import {
   getCurrentMilestoneProgress,
   MilestoneProgress,
 } from '@/utils/recoveryCalculator'
-import {
-  scheduleAllUpcomingMilestones,
-  scheduleDailyReminder,
-  scheduleInactivityWarning,
-  rescheduleAfterRelapse,
-} from '@/utils/notifications'
+import { rescheduleAfterRelapse } from '@/utils/notifications'
+import { initializeNotificationBootstrap } from '@/utils/notificationBootstrap'
+import { useScanStore } from '@/store/scanStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
@@ -28,6 +26,26 @@ export interface OnboardingData {
   vapingDurationMonths: number
   nicotineStrength: number
   puffsPerDay: number
+}
+
+/**
+ * User-chosen goal for the money saved by not vaping. Makes the raw dollar
+ * number on the dashboard concrete ("40% of a new bike") — converts better
+ * than an abstract currency amount.
+ */
+export interface QuitFundGoal {
+  label: string
+  amountCents: number
+}
+
+/**
+ * Optional context captured during the relapse compassion flow. Persisted on
+ * the user (most-recent only) so follow-up UI can reference it; the full
+ * history lives in logsStore as `relapse` entries with the same fields.
+ */
+export interface RelapseContext {
+  trigger?: string
+  journal?: string
 }
 
 interface UserState {
@@ -41,13 +59,16 @@ interface UserState {
   hasCompletedOnboarding: boolean
   costPerPuff: number
   celebratedMilestoneIds: string[]
+  quitFundGoal: QuitFundGoal | null
+  lastRelapseContext: RelapseContext | null
 
   // Actions
   completeOnboarding: (data: OnboardingData) => void
-  recordRelapse: () => void
+  recordRelapse: (context?: RelapseContext) => void
   resetProgress: () => void
   clearData: () => void
   markMilestoneCelebrated: (milestoneId: string) => void
+  setQuitFundGoal: (goal: QuitFundGoal | null) => void
 
   // Computed (called as functions since Zustand doesn't have native getters)
   getRecoveryStartDate: () => Date
@@ -80,6 +101,8 @@ export const useUserStore = create<UserState>()(
       hasCompletedOnboarding: false,
       costPerPuff: 0.02, // Default ~$0.02 per puff
       celebratedMilestoneIds: [],
+      quitFundGoal: null,
+      lastRelapseContext: null,
 
       // Actions
       completeOnboarding: (data: OnboardingData) => {
@@ -102,18 +125,33 @@ export const useUserStore = create<UserState>()(
           celebratedMilestoneIds: [],
         })
 
-        // Schedule notifications for all upcoming milestones
-        scheduleAllUpcomingMilestones(quitDate).catch(() => {})
-        scheduleDailyReminder().catch(() => {})
-        scheduleInactivityWarning().catch(() => {})
+        // Defer scheduling to bootstrap so it honors the user's notification setting
+        // and requests permissions first. No-op when notifications are disabled.
+        const settings = useSettingsStore.getState()
+        initializeNotificationBootstrap({
+          notificationsEnabled: settings.notificationsEnabled,
+          dailyReminderTime: settings.dailyReminderTime,
+          quitDate,
+        }).catch(() => {})
       },
 
-      recordRelapse: () => {
+      recordRelapse: (context) => {
         const now = new Date()
-        set({ lastVapeDate: now.toISOString(), celebratedMilestoneIds: [] })
+        set({
+          lastVapeDate: now.toISOString(),
+          celebratedMilestoneIds: [],
+          lastRelapseContext: context ?? null,
+        })
 
-        // Reschedule all notifications from the new start date
-        rescheduleAfterRelapse(now).catch(() => {})
+        // The next scan anchors a new baseline against the reset recovery clock.
+        // Without this, the first post-relapse scan would be blocked (same local
+        // date as pre-relapse scan) and deltas would be stale.
+        useScanStore.getState().resetScans()
+
+        // Only reschedule if the user has notifications on.
+        if (useSettingsStore.getState().notificationsEnabled) {
+          rescheduleAfterRelapse(now).catch(() => {})
+        }
       },
 
       resetProgress: () => {
@@ -124,8 +162,11 @@ export const useUserStore = create<UserState>()(
           celebratedMilestoneIds: [],
         })
 
-        // Reschedule notifications
-        rescheduleAfterRelapse(now).catch(() => {})
+        useScanStore.getState().resetScans()
+
+        if (useSettingsStore.getState().notificationsEnabled) {
+          rescheduleAfterRelapse(now).catch(() => {})
+        }
       },
 
       clearData: () => {
@@ -139,6 +180,8 @@ export const useUserStore = create<UserState>()(
           hasCompletedOnboarding: false,
           costPerPuff: 0.02,
           celebratedMilestoneIds: [],
+          quitFundGoal: null,
+          lastRelapseContext: null,
         })
       },
 
@@ -147,6 +190,10 @@ export const useUserStore = create<UserState>()(
         if (!state.celebratedMilestoneIds.includes(milestoneId)) {
           set({ celebratedMilestoneIds: [...state.celebratedMilestoneIds, milestoneId] })
         }
+      },
+
+      setQuitFundGoal: (goal) => {
+        set({ quitFundGoal: goal })
       },
 
       // Computed
@@ -219,7 +266,7 @@ export const useUserStore = create<UserState>()(
         const hours = state.getHoursSinceQuit()
         return MILESTONES.filter(
           (m) => isMilestoneAchieved(m, hours) && !state.celebratedMilestoneIds.includes(m.id),
-        )
+        ).sort((a, b) => a.hoursRequired - b.hoursRequired)
       },
     }),
     {

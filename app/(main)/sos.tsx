@@ -5,8 +5,15 @@
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Colors } from '@/constants/Colors'
-import { useLogsStore } from '@/store/logsStore'
+import {
+  CravingTrigger,
+  CRAVING_TRIGGERS,
+  HaltState,
+  HALT_OPTIONS,
+  useLogsStore,
+} from '@/store/logsStore'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useUserStore } from '@/store/userStore'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { usePlacement } from 'expo-superwall'
@@ -22,18 +29,20 @@ import {
   Waves,
   X,
 } from 'lucide-react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
+  AppState,
   Dimensions,
   FlatList,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
   useSharedValue,
@@ -41,6 +50,7 @@ import Animated, {
 } from 'react-native-reanimated'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
+const CRAVING_DURATION_MS = 15 * 60 * 1000 // 15 minutes
 
 const CRAVING_TIPS = [
   {
@@ -80,30 +90,61 @@ export default function SOSView() {
   const addLog = useLogsStore((state) => state.addLog)
   const cravingResistCount = useLogsStore((state) => state.getCravingsResisted())
   const recordPaywallShown = useSettingsStore((state) => state.recordPaywallShown)
+  const getDaysSinceQuit = useUserStore((state) => state.getDaysSinceQuit)
+  const getMoneySaved = useUserStore((state) => state.getMoneySaved)
   const { registerPlacement } = usePlacement({})
 
-  const [cravingMinutes, setCravingMinutes] = useState(15)
+  const [remainingMs, setRemainingMs] = useState(CRAVING_DURATION_MS)
   const [isBreathing, setIsBreathing] = useState(false)
   const [breathPhase, setBreathPhase] = useState('Breathe In')
 
-  const breatheScale = useSharedValue(1)
+  // HALT self-check (Hungry/Angry/Lonely/Tired) + trigger tag. Multi-select for
+  // HALT (often co-occurring), single-select for trigger (keeps pattern analysis
+  // unambiguous — each resist event points to one primary cause).
+  const [halt, setHalt] = useState<HaltState[]>([])
+  const [trigger, setTrigger] = useState<CravingTrigger | null>(null)
 
-  // Craving countdown timer
+  const toggleHalt = (id: HaltState) => {
+    setHalt((prev) => (prev.includes(id) ? prev.filter((h) => h !== id) : [...prev, id]))
+  }
+
+  const breatheScale = useSharedValue(1)
+  // Timestamp-based countdown: derive remaining from wall-clock, so the timer
+  // stays correct while the app is backgrounded and tick rates throttle.
+  const startedAtRef = useRef(Date.now())
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCravingMinutes((m) => Math.max(0, m - 1))
-    }, 60000)
-    return () => clearInterval(interval)
+    startedAtRef.current = Date.now()
+    setRemainingMs(CRAVING_DURATION_MS)
+
+    const recompute = () => {
+      const elapsed = Date.now() - startedAtRef.current
+      setRemainingMs(Math.max(0, CRAVING_DURATION_MS - elapsed))
+    }
+
+    const interval = setInterval(recompute, 30_000)
+    const appStateSub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') recompute()
+    })
+
+    return () => {
+      clearInterval(interval)
+      appStateSub.remove()
+    }
   }, [])
 
-  // Breathing animation
+  const cravingMinutes = Math.max(0, Math.ceil(remainingMs / 60000))
+
+  // Breathing cycle: track every timeout in a ref so we can cancel on unmount
+  // or on user-stop, preventing overlapping cycles that cause phase flicker.
   useEffect(() => {
     if (!isBreathing) return
 
-    let isMounted = true
+    const timers: ReturnType<typeof setTimeout>[] = []
+    let cancelled = false
 
     const runCycle = () => {
-      if (!isMounted || !isBreathing) return
+      if (cancelled) return
 
       // Breathe in (4s)
       setBreathPhase('Breathe In')
@@ -112,33 +153,39 @@ export default function SOSView() {
         easing: Easing.inOut(Easing.ease),
       })
 
-      setTimeout(() => {
-        if (!isMounted || !isBreathing) return
-        // Hold (7s)
-        setBreathPhase('Hold')
-
+      timers.push(
         setTimeout(() => {
-          if (!isMounted || !isBreathing) return
-          // Breathe out (8s)
-          setBreathPhase('Breathe Out')
-          breatheScale.value = withTiming(1, {
-            duration: 8000,
-            easing: Easing.inOut(Easing.ease),
-          })
+          if (cancelled) return
+          // Hold (7s)
+          setBreathPhase('Hold')
 
-          setTimeout(() => {
-            if (isMounted && isBreathing) {
-              runCycle()
-            }
-          }, 8000)
-        }, 7000)
-      }, 4000)
+          timers.push(
+            setTimeout(() => {
+              if (cancelled) return
+              // Breathe out (8s)
+              setBreathPhase('Breathe Out')
+              breatheScale.value = withTiming(1, {
+                duration: 8000,
+                easing: Easing.inOut(Easing.ease),
+              })
+
+              timers.push(
+                setTimeout(() => {
+                  if (!cancelled) runCycle()
+                }, 8000),
+              )
+            }, 7000),
+          )
+        }, 4000),
+      )
     }
 
     runCycle()
 
     return () => {
-      isMounted = false
+      cancelled = true
+      for (const t of timers) clearTimeout(t)
+      cancelAnimation(breatheScale)
     }
   }, [isBreathing, breatheScale])
 
@@ -157,11 +204,23 @@ export default function SOSView() {
   }
 
   const handleResisted = () => {
-    addLog('cravingResisted')
+    addLog('cravingResisted', {
+      trigger: trigger ?? undefined,
+      halt: halt.length > 0 ? halt : undefined,
+    })
 
-    // Smart paywall: trigger after 3rd craving resisted (user relies on the app)
+    // Smart paywall: trigger after 3rd craving resisted (user relies on the app).
+    // Pass personalized params so Superwall can interpolate them into paywall
+    // copy ("You've resisted 3 cravings and saved $X").
     if (cravingResistCount + 1 === 3) {
-      registerPlacement({ placement: 'campaign_trigger' })
+      registerPlacement({
+        placement: 'resist_milestone',
+        params: {
+          resist_count: cravingResistCount + 1,
+          days_clean: getDaysSinceQuit(),
+          money_saved: Math.round(getMoneySaved() * 100) / 100,
+        },
+      })
       recordPaywallShown()
     }
 
@@ -267,6 +326,58 @@ export default function SOSView() {
               </Card>
             )}
           />
+        </View>
+
+        {/* HALT self-check — Hungry / Angry / Lonely / Tired. Multi-select.
+            Shown before "I Resisted" so the tap captures context at the moment
+            of resistance rather than requiring a follow-up screen. */}
+        <View style={styles.haltSection}>
+          <Text style={styles.sectionLabel}>HALT CHECK</Text>
+          <Text style={styles.haltHint}>
+            Cravings often ride on an underlying state. Tap any that apply.
+          </Text>
+          <View style={styles.chipRow}>
+            {HALT_OPTIONS.map((opt) => {
+              const active = halt.includes(opt.id)
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  onPress={() => toggleHalt(opt.id)}
+                  style={[styles.chip, active && styles.chipActive]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
+          </View>
+        </View>
+
+        {/* Trigger tag — single-select. Feeds the insights engine so the
+            dashboard can eventually say "your top trigger is stress". */}
+        <View style={styles.triggerSection}>
+          <Text style={styles.sectionLabel}>WHAT TRIGGERED THIS?</Text>
+          <View style={styles.chipRow}>
+            {CRAVING_TRIGGERS.map((opt) => {
+              const active = trigger === opt.id
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  onPress={() => setTrigger(active ? null : opt.id)}
+                  style={[styles.chip, active && styles.chipActive]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
+          </View>
         </View>
 
         {/* I Resisted Button */}
@@ -439,5 +550,43 @@ const styles = StyleSheet.create({
   },
   resistedContainer: {
     marginTop: 32,
+  },
+  haltSection: {
+    marginTop: 24,
+  },
+  haltHint: {
+    fontSize: 12,
+    color: Colors.subtleText,
+    marginBottom: 10,
+    lineHeight: 16,
+  },
+  triggerSection: {
+    marginTop: 20,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  chipActive: {
+    backgroundColor: 'rgba(0, 240, 255, 0.14)',
+    borderColor: 'rgba(0, 240, 255, 0.55)',
+  },
+  chipText: {
+    fontSize: 13,
+    color: Colors.subtleText,
+    fontWeight: '500',
+  },
+  chipTextActive: {
+    color: Colors.neonCyan,
+    fontWeight: '600',
   },
 })

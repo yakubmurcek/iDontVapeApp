@@ -66,7 +66,9 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   useEffect(() => {
     if (!start) return
     if (displayedText === text) {
-      if (isTyping) {
+      // Guard `hasCompleted` so skipToEnd (which already fires onComplete) can't
+      // race with this branch and double-fire the callback.
+      if (isTyping && !hasCompleted) {
         setIsTyping(false)
         setHasCompleted(true)
         onComplete?.()
@@ -101,7 +103,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
     }, nextDelay)
 
     return () => clearTimeout(timeout)
-  }, [start, displayedText, text, speed, onComplete, isTyping])
+  }, [start, displayedText, text, speed, onComplete, isTyping, hasCompleted])
 
   // Reset if text changes completely (optional specific behavior)
   useEffect(() => {

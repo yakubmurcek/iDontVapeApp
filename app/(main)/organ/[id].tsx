@@ -77,9 +77,11 @@ export default function OrganDeepDive() {
     router.back()
   }, [canShowPaywallToday, registerPlacement, recordPaywallShown, router])
 
+  // Tick every 60s so time-based values (milestone ETAs, recovery %) refresh.
+  // 5s was excessive — the smallest unit displayed (minutes) only changes every 60s.
   const [, setTick] = useState(0)
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 5000)
+    const interval = setInterval(() => setTick((t) => t + 1), 60000)
     return () => clearInterval(interval)
   }, [])
 

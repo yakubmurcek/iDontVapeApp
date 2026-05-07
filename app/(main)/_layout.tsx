@@ -36,6 +36,13 @@ export default function MainLayout() {
         }}
       />
       <Stack.Screen
+        name="relapse"
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      <Stack.Screen
         name="organ/[id]"
         options={{
           animation: 'none',

@@ -5,17 +5,19 @@
 import { BioTwinScene } from '@/components/BioTwin/BioTwinScene'
 import { MilestoneCelebration } from '@/components/Celebration/MilestoneCelebration'
 import { HealthMetricCard } from '@/components/Dashboard/HealthMetricCard'
+import { InsightsCard } from '@/components/Dashboard/InsightsCard'
 import { MilestoneCard } from '@/components/Dashboard/MilestoneCard'
-import { StatCard } from '@/components/Dashboard/StatCard'
+import { QuitFundCard } from '@/components/Dashboard/QuitFundCard'
 import { SystemAnnotation } from '@/components/Dashboard/SystemAnnotation'
 import { Button } from '@/components/ui/Button'
 import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
 import { RecoveryMilestone } from '@/constants/milestones'
-import { useLogsStore } from '@/store/logsStore'
 import { useScanStore } from '@/store/scanStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
+import { resetAppData } from '@/utils/appReset'
+import { refreshWidget } from '@/utils/widgetData'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Href, useRouter } from 'expo-router'
 import { usePlacement } from 'expo-superwall'
@@ -24,13 +26,23 @@ import {
   AlertTriangle,
   Brain,
   Clock,
-  DollarSign,
   List,
+  Share2,
   ShieldAlert,
+  Snowflake,
   Wind,
 } from 'lucide-react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  Alert,
+  AppState,
+  AppStateStatus,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated, {
   Extrapolation,
@@ -77,6 +89,7 @@ export default function Dashboard() {
   // Scan store
   const hasScanAvailableToday = useScanStore((state) => state.hasScanAvailableToday)
   const scanStreak = useScanStore((state) => state.scanStreak)
+  const streakFreezes = useScanStore((state) => state.streakFreezes)
 
   // Settings store (paywall rate limiting)
   const canShowPaywallToday = useSettingsStore((state) => state.canShowPaywallToday)
@@ -89,33 +102,63 @@ export default function Dashboard() {
 
   // Force re-render every minute to update time-based computed values
   // (display format is DDd HHh MMm, so per-minute updates are sufficient)
-  const [, setTick] = useState(0)
+  const [tick, setTick] = useState(0)
+  const appState = useRef<AppStateStatus>(AppState.currentState)
   useEffect(() => {
     const interval = setInterval(() => setTick((t: number) => t + 1), 60000)
     return () => clearInterval(interval)
   }, [])
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        setTick((t: number) => t + 1)
+      }
+      appState.current = nextState
+    })
 
-  // Smart paywall: show on dashboard load only after day 3 (user has invested time)
+    return () => subscription.remove()
+  }, [])
+
+  // Smart paywall: show on dashboard load only after day 3 (user has invested time).
+  // Record "shown for today" BEFORE the timer so a fast remount (navigate away and
+  // back within 3s) can't schedule two placements — the second mount sees the gate
+  // closed. We accept that a user who bounces off in <3s just misses today's paywall.
+  // Pass personalized params so Superwall can interpolate them into copy.
   useEffect(() => {
     const daysSinceQuit = getDaysSinceQuit()
     if (daysSinceQuit >= 3 && canShowPaywallToday()) {
-      const timer = setTimeout(async () => {
-        await registerPlacement({ placement: 'campaign_trigger' })
-        recordPaywallShown()
-      }, 3000) // Wait 3s so user sees their progress first
+      recordPaywallShown()
+      const timer = setTimeout(() => {
+        registerPlacement({
+          placement: 'campaign_trigger',
+          params: {
+            days_clean: daysSinceQuit,
+            money_saved: Math.round(getMoneySaved() * 100) / 100,
+            streak: scanStreak,
+          },
+        })
+      }, 3000)
       return () => clearTimeout(timer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Check for newly achieved milestones
+  // Check for newly achieved milestones. Depend on `tick` so that a milestone
+  // rolling over while the dashboard stays open still fires a celebration.
   useEffect(() => {
+    if (celebratingMilestone) return
     const newMilestones = getNewlyAchievedMilestones()
-    if (newMilestones.length > 0 && !celebratingMilestone) {
+    if (newMilestones.length > 0) {
       setPendingCelebrations(newMilestones)
       setCelebratingMilestone(newMilestones[0])
     }
-  }, [getNewlyAchievedMilestones, celebratingMilestone])
+  }, [tick, celebratingMilestone, getNewlyAchievedMilestones])
+
+  // Keep widget payload fresh whenever the dashboard is visited or time ticks.
+  // No-op until native widgets are wired (see utils/widgetData.ts).
+  useEffect(() => {
+    refreshWidget()
+  }, [tick])
 
   const handleCelebrationDismiss = useCallback(() => {
     if (celebratingMilestone) {
@@ -162,6 +205,35 @@ export default function Dashboard() {
     [router],
   )
 
+  // Share my progress — text-only share (no view-shot dep, works in managed
+  // Expo). Deliberately written as something a user would actually send: short,
+  // concrete numbers, no corporate branding. We include a referral-ish line
+  // only if there's real progress to share (≥1 day); before that it reads
+  // tryhard.
+  const handleShare = useCallback(async () => {
+    const days = getDaysSinceQuit()
+    const money = Math.round(getMoneySaved())
+    const streak = scanStreak
+
+    const parts: string[] = []
+    if (days >= 1) {
+      parts.push(`${days} day${days === 1 ? '' : 's'} without vaping.`)
+    } else {
+      parts.push(`Day 1 — I'm done vaping.`)
+    }
+    if (money > 0) parts.push(`$${money} saved.`)
+    if (streak >= 2) parts.push(`${streak}-day check-in streak.`)
+    parts.push(`One breath at a time.`)
+
+    const message = parts.join(' ')
+
+    try {
+      await Share.share({ message })
+    } catch (err) {
+      if (__DEV__) console.error('[share] failed:', err)
+    }
+  }, [getDaysSinceQuit, getMoneySaved, scanStreak])
+
   const handleReset = () => {
     Alert.alert(
       'Reset App',
@@ -171,9 +243,8 @@ export default function Dashboard() {
         {
           text: 'Reset',
           style: 'destructive',
-          onPress: () => {
-            useUserStore.getState().clearData()
-            useLogsStore.getState().clearLogs()
+          onPress: async () => {
+            await resetAppData()
             router.replace('/')
           },
         },
@@ -287,18 +358,11 @@ export default function Dashboard() {
               hoursSinceQuit={hoursSinceQuit}
             />
 
-            {/* Credits Saved - Re-added as single prominent card */}
-            <StatCard
-              icon={
-                <DollarSign
-                  size={20}
-                  color={Colors.healthGreen}
-                />
-              }
-              label="CREDITS SAVED"
-              value={`$${moneySaved.toFixed(2)}`}
-              color={Colors.healthGreen}
-            />
+            {/* Quit Fund — visceral money with goal progress */}
+            <QuitFundCard moneySaved={moneySaved} />
+
+            {/* Pattern Insights — free headline + paywalled rest */}
+            <InsightsCard />
 
             {/* Health Metrics Section */}
             <View style={styles.metricsContainer}>
@@ -380,6 +444,16 @@ export default function Dashboard() {
                             <Text style={styles.streakText}>{scanStreak}</Text>
                           </View>
                         )}
+                        {streakFreezes > 0 && (
+                          <View style={styles.freezeBadge}>
+                            <Snowflake
+                              size={10}
+                              color="#000"
+                              strokeWidth={3}
+                            />
+                            <Text style={styles.freezeText}>{streakFreezes}</Text>
+                          </View>
+                        )}
                       </View>
                       <Text style={styles.scanBannerSubtext}>
                         Check today&apos;s recovery changes
@@ -433,6 +507,22 @@ export default function Dashboard() {
                 style={styles.logsButton}
               />
             </View>
+
+            {/* Share my progress — low-key link-level button. Organic word-of-
+                mouth is our cheapest acquisition channel; surface it once the
+                user has a streak or clean days to show off, without nagging. */}
+            <TouchableOpacity
+              onPress={handleShare}
+              style={styles.shareButton}
+              accessibilityRole="button"
+              accessibilityLabel="Share my progress"
+            >
+              <Share2
+                size={14}
+                color={Colors.subtleText}
+              />
+              <Text style={styles.shareButtonText}>Share my progress</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Reset Button */}
@@ -515,6 +605,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   streakText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#000',
+  },
+  freezeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#A8DFFF',
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    justifyContent: 'center',
+  },
+  freezeText: {
     fontSize: 9,
     fontWeight: '800',
     color: '#000',
@@ -628,6 +734,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  shareButtonText: {
+    fontSize: 12,
+    color: Colors.subtleText,
+    fontWeight: '500',
   },
   resetContainer: {
     marginTop: 12,

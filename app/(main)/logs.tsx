@@ -8,18 +8,11 @@ import { Colors } from '@/constants/Colors'
 import { MILESTONES, isMilestoneAchieved } from '@/constants/milestones'
 import { LogEntryType, VapingLog, getLogTitle, useLogsStore } from '@/store/logsStore'
 import { useUserStore } from '@/store/userStore'
-import { useRouter } from 'expo-router'
-import { AlertTriangle, CheckCircle, Eye, Hand, RotateCcw, Star, X } from 'lucide-react-native'
+import { Href, useRouter } from 'expo-router'
+import { AlertTriangle, CheckCircle, Hand, RotateCcw, X } from 'lucide-react-native'
 import React, { useMemo } from 'react'
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Helper to format date
 function formatDate(dateStr: string): string {
@@ -61,13 +54,6 @@ function getLogIconComponent(type: LogEntryType) {
           color={Colors.dataBlue}
         />
       )
-    case 'milestoneAchieved':
-      return (
-        <Star
-          size={20}
-          color={Colors.healthGreen}
-        />
-      )
     case 'cravingResisted':
       return (
         <Hand
@@ -82,20 +68,6 @@ function getLogIconComponent(type: LogEntryType) {
           color={Colors.criticalRed}
         />
       )
-    case 'appOpened':
-      return (
-        <Eye
-          size={20}
-          color={Colors.dataBlue}
-        />
-      )
-    default:
-      return (
-        <CheckCircle
-          size={20}
-          color={Colors.dataBlue}
-        />
-      )
   }
 }
 
@@ -105,12 +77,10 @@ export default function LogsView() {
   // User store
   const getDaysSinceQuit = useUserStore((state) => state.getDaysSinceQuit)
   const getHoursSinceQuit = useUserStore((state) => state.getHoursSinceQuit)
-  const recordRelapse = useUserStore((state) => state.recordRelapse)
 
   // Logs store
   const logs = useLogsStore((state) => state.logs)
   const getCravingsResisted = useLogsStore((state) => state.getCravingsResisted)
-  const addLog = useLogsStore((state) => state.addLog)
 
   const daysClean = getDaysSinceQuit()
   const hoursSinceQuit = getHoursSinceQuit()
@@ -133,31 +103,22 @@ export default function LogsView() {
       groups[dateKey].push(log)
     }
 
-    // Sort by date descending
+    // Sort by each group's latest timestamp (descending). Using the stored ISO
+    // timestamps directly avoids re-parsing `toDateString()` output, which isn't
+    // reliably parseable across JS engines/locales.
     return Object.entries(groups)
-      .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-      .map(([dateKey, logs]) => ({
-        date: logs[0].timestamp,
-        logs,
+      .map(([, dayLogs]) => ({
+        date: dayLogs[0].timestamp,
+        logs: dayLogs,
       }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }, [logs])
 
+  // Route to the compassion flow instead of a one-tap destructive Alert. The
+  // flow is responsible for actually calling `recordRelapse()` once the user
+  // completes the three steps (or dismisses early).
   const handleRelapse = () => {
-    Alert.alert(
-      'Log a setback?',
-      "This will reset your recovery timer. Remember: setbacks are part of the journey. What matters is that you're back.",
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Yes, I vaped',
-          style: 'destructive',
-          onPress: () => {
-            recordRelapse()
-            addLog('relapse', { note: 'Timer reset - starting fresh' })
-          },
-        },
-      ],
-    )
+    router.push('/(main)/relapse' as Href)
   }
 
   return (
@@ -222,9 +183,7 @@ export default function LogsView() {
                       <View style={styles.logIcon}>{getLogIconComponent(log.entryType)}</View>
 
                       <View style={styles.logContent}>
-                        <Text style={styles.logTitle}>
-                          {getLogTitle(log.entryType, log.milestoneId)}
-                        </Text>
+                        <Text style={styles.logTitle}>{getLogTitle(log.entryType)}</Text>
                         {log.note && <Text style={styles.logNote}>{log.note}</Text>}
                       </View>
 

@@ -106,7 +106,7 @@ export function HealthMetricCard({
                   isComplete ? styles.badgeTextComplete : styles.badgeTextProgress,
                 ]}
               >
-                {isComplete ? 'CLEARED' : 'PURGUNG...'}
+                {isComplete ? 'CLEARED' : 'PURGING...'}
               </Text>
             </View>
           </View>

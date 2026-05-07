@@ -14,7 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function NicotineStep() {
   const router = useRouter()
-  const [strength, setStrength] = useState(20)
+  const storedStrength = useOnboardingStore((state) => state.nicotineStrength)
+  const [strength, setStrength] = useState(storedStrength)
   const setNicotineStrength = useOnboardingStore((state) => state.setNicotineStrength)
 
   const formatStrength = (value: number): string => {
@@ -32,7 +33,7 @@ export default function NicotineStep() {
 
   // Custom non-linear scaling for nicotine
   // Spread low values more: 3-10mg gets 40%, 10-20mg gets 25%, 20-30mg gets 20%, 30-50mg gets 15%
-  const nicotineToPosition = (val: number, min: number, max: number): number => {
+  const nicotineToPosition = (val: number, _min: number, max: number): number => {
     // Range 1: 3 -> 10 (takes 0% -> 40% of slider) - most granular for low nicotine
     if (val <= 10) {
       return ((val - 3) / (10 - 3)) * 0.4

@@ -14,7 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function PuffsStep() {
   const router = useRouter()
-  const [puffs, setPuffs] = useState(100)
+  const storedPuffs = useOnboardingStore((state) => state.puffsPerDay)
+  const [puffs, setPuffs] = useState(storedPuffs)
   const setPuffsPerDay = useOnboardingStore((state) => state.setPuffsPerDay)
 
   const formatPuffs = (value: number): string => {
@@ -39,7 +40,7 @@ export default function PuffsStep() {
   }
 
   // Custom non-linear scaling for puffs
-  const puffsToPosition = (val: number, min: number, max: number): number => {
+  const puffsToPosition = (val: number, _min: number, max: number): number => {
     // Range 1: 50 -> 150 (takes 0% -> 50% of slider)
     if (val <= 150) {
       return ((val - 50) / (150 - 50)) * 0.5

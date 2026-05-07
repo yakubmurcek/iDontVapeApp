@@ -14,7 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function DurationStep() {
   const router = useRouter()
-  const [months, setMonths] = useState(12)
+  const storedMonths = useOnboardingStore((state) => state.vapingDurationMonths)
+  const [months, setMonths] = useState(storedMonths)
   const setVapingDurationMonths = useOnboardingStore((state) => state.setVapingDurationMonths)
 
   // Dynamic step: months below 2 years, full years after

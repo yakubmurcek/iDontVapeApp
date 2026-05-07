@@ -5,10 +5,14 @@
 import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
 import { ScanMetrics, ScanResult, useScanStore } from '@/store/scanStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { useUserStore } from '@/store/userStore'
+import { scheduleInactivityWarning, scheduleStreakAtRiskAlert } from '@/utils/notifications'
+import { refreshWidget } from '@/utils/widgetData'
+import { usePlacement } from 'expo-superwall'
 import * as Haptics from 'expo-haptics'
-import { useRouter } from 'expo-router'
-import { X } from 'lucide-react-native'
+import { Href, useRouter } from 'expo-router'
+import { Snowflake, X } from 'lucide-react-native'
 import { useCallback, useEffect, useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Animated, {
@@ -78,6 +82,12 @@ export default function ScanScreen() {
   const [currentMetrics, setCurrentMetrics] = useState<ScanMetrics | null>(null)
 
   const performScan = useScanStore((state) => state.performScan)
+  const hasScanAvailableToday = useScanStore((state) => state.hasScanAvailableToday)
+  const streakFreezes = useScanStore((state) => state.streakFreezes)
+  const notificationsEnabled = useSettingsStore((state) => state.notificationsEnabled)
+  const canShowPaywallToday = useSettingsStore((state) => state.canShowPaywallToday)
+  const recordPaywallShown = useSettingsStore((state) => state.recordPaywallShown)
+  const getDaysSinceQuit = useUserStore((state) => state.getDaysSinceQuit)
   const getSystemIntegrity = useUserStore((state) => state.getSystemIntegrity)
   const getLungRecovery = useUserStore((state) => state.getLungRecovery)
   const getHeartRecovery = useUserStore((state) => state.getHeartRecovery)
@@ -85,11 +95,25 @@ export default function ScanScreen() {
   const getToxinClearance = useUserStore((state) => state.getToxinClearance)
   const getNeuralReset = useUserStore((state) => state.getNeuralReset)
 
+  const { registerPlacement } = usePlacement({})
+
   // Scan animation
   const scanProgress = useSharedValue(0)
   const scanPulse = useSharedValue(1)
 
   useEffect(() => {
+    // Guard: if a scan has already been run today, don't replay the animation or
+    // re-invoke performScan — bounce back to the dashboard. On a cold launch via
+    // notification tap there's no back stack, so fall through to a replace.
+    if (!hasScanAvailableToday()) {
+      if (router.canGoBack()) {
+        router.back()
+      } else {
+        router.replace('/(main)' as Href)
+      }
+      return
+    }
+
     // Start scan animation
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     scanProgress.value = withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) })
@@ -114,6 +138,33 @@ export default function ScanScreen() {
       setScanResult(result)
       setPhase('results')
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      // Scan completion is the highest-value moment to refresh the widget.
+      refreshWidget()
+      if (notificationsEnabled) {
+        scheduleInactivityWarning().catch((e) => {
+          if (__DEV__) console.error('[notifications] inactivity warning failed:', e)
+        })
+        // Loss-aversion push: at-risk alert fires 8pm tomorrow unless the user
+        // scans again first (which will cancel + reschedule with the new count).
+        scheduleStreakAtRiskAlert(result.streak).catch((e) => {
+          if (__DEV__) console.error('[notifications] streak-at-risk failed:', e)
+        })
+      }
+      // Premium feature moment: if a freeze was consumed, fire the `streak_saved`
+      // placement. The user just felt the benefit viscerally — best possible time
+      // to show a paywall that emphasizes the freeze entitlement. Still respects
+      // the daily cap since this auto-triggers without explicit intent.
+      if (result.freezeConsumed && canShowPaywallToday()) {
+        registerPlacement({
+          placement: 'streak_saved',
+          params: {
+            streak: result.streak,
+            days_clean: getDaysSinceQuit(),
+            remaining_freezes: streakFreezes - 1,
+          },
+        })
+        recordPaywallShown()
+      }
     }, 3000)
 
     return () => clearTimeout(timer)
@@ -188,6 +239,28 @@ export default function ScanScreen() {
                 <Text style={styles.streakLabel}>CHECK-IN STREAK</Text>
                 <Text style={styles.streakValue}>{scanResult.streak}</Text>
                 <Text style={styles.streakDays}>day{scanResult.streak === 1 ? '' : 's'}</Text>
+              </Animated.View>
+            )}
+
+            {/* Freeze-consumed celebration — only shown when a streak freeze
+                just saved the user's streak. Intentionally loud so the user
+                feels the premium benefit; the streak_saved paywall fires
+                alongside this in useEffect. */}
+            {scanResult.freezeConsumed && (
+              <Animated.View
+                entering={FadeInDown.delay(150).duration(400)}
+                style={styles.freezeBanner}
+              >
+                <Snowflake
+                  size={20}
+                  color="#A8DFFF"
+                />
+                <View style={styles.freezeTextBlock}>
+                  <Text style={styles.freezeTitle}>Streak saved with a freeze</Text>
+                  <Text style={styles.freezeSubtitle}>
+                    You missed yesterday, but your {scanResult.streak}-day streak is still alive.
+                  </Text>
+                </View>
               </Animated.View>
             )}
 
@@ -321,6 +394,32 @@ const styles = StyleSheet.create({
   streakDays: {
     fontSize: 14,
     color: Colors.subtleText,
+  },
+  freezeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(168, 223, 255, 0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(168, 223, 255, 0.35)',
+    width: '100%',
+  },
+  freezeTextBlock: {
+    flex: 1,
+  },
+  freezeTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#A8DFFF',
+  },
+  freezeSubtitle: {
+    fontSize: 12,
+    color: Colors.subtleText,
+    marginTop: 2,
+    lineHeight: 16,
   },
   metricsContainer: {
     width: '100%',

@@ -5,6 +5,7 @@
 import { ColorRGB, Colors } from '@/constants/Colors'
 import React from 'react'
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedProps,
   useSharedValue,
@@ -74,6 +75,9 @@ export function Heart({
       -1,
       false,
     )
+    return () => {
+      cancelAnimation(heartbeatScale)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animate])
 

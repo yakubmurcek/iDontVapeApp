@@ -5,6 +5,7 @@
 import { ColorRGB, Colors } from '@/constants/Colors'
 import React from 'react'
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedProps,
   useSharedValue,
@@ -75,6 +76,9 @@ export function Lungs({
       -1,
       false,
     )
+    return () => {
+      cancelAnimation(breatheScale)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailLevel, animate])
 

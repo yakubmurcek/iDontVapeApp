@@ -5,6 +5,7 @@
 import { ColorRGB, Colors } from '@/constants/Colors'
 import React from 'react'
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedProps,
   useSharedValue,
@@ -54,6 +55,9 @@ export function BloodVessels({
       -1,
       true,
     )
+    return () => {
+      cancelAnimation(pulseOpacity)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animate])
 
