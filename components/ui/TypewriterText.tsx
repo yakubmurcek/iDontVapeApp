@@ -1,4 +1,5 @@
 import { Colors } from '@/constants/Colors'
+import { getRandomFloat } from '@/utils/crypto'
 import React, { useEffect, useState } from 'react'
 import { StyleProp, StyleSheet, Text, TextStyle, View } from 'react-native'
 import Animated, {
@@ -82,7 +83,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
     let nextDelay = speed
 
     // 1. Random variance (0.7x to 1.3x)
-    const variance = Math.random() * 0.6 + 0.7
+    const variance = getRandomFloat() * 0.6 + 0.7
     nextDelay = nextDelay * variance
 
     // 2. Longer pause at punctuation (only if not the very last char)
@@ -92,7 +93,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
     }
 
     // 3. Occasional random "thinking" pause (1% chance)
-    if (Math.random() < 0.01) {
+    if (getRandomFloat() < 0.01) {
       nextDelay = Math.max(nextDelay, speed * 8)
     }
 

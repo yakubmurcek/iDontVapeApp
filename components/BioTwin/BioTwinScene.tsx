@@ -1,77 +1,99 @@
 /**
  * BioTwinScene - Main container for the Bio-Twin visualization
+ * Organs are touchable to navigate to deep-dive screens
  */
 
+import { OrganType } from '@/constants/milestones'
 import React from 'react'
-import { Dimensions, StyleSheet, View } from 'react-native'
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated'
+import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { BloodVessels } from './BloodVessels'
 import { Heart } from './Heart'
+import { HologramFrame } from './HologramFrame'
 import { Lungs } from './Lungs'
 
 interface BioTwinSceneProps {
   recoveryProgress: number // 0-1
   height?: number
+  onOrganPress?: (organ: OrganType) => void
+  visualMode?: 'classic' | 'hologram'
+  showFrame?: boolean
+  animateFrame?: boolean
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
-export function BioTwinScene({ recoveryProgress, height = 350 }: BioTwinSceneProps) {
-  // Slow rotation animation
-  const rotation = useSharedValue(0)
-
-  React.useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(360, { duration: 30000, easing: Easing.linear }),
-      -1,
-      false,
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const rotationStyle = useAnimatedStyle(() => ({
-    transform: [
-      { perspective: 1000 },
-      { rotateY: `${rotation.value * 0.05}deg` }, // Very subtle rotation
-    ],
-  }))
+export function BioTwinScene({
+  recoveryProgress,
+  height = 350,
+  onOrganPress,
+  visualMode = 'hologram',
+  showFrame = true,
+  animateFrame = true,
+}: BioTwinSceneProps) {
+  const isHologram = visualMode === 'hologram'
+  const lightweightHologram = isHologram && !animateFrame
 
   return (
     <View style={[styles.container, { height }]}>
-      <Animated.View style={[styles.scene, rotationStyle]}>
+      <View style={styles.scene}>
         {/* Blood vessels in the background */}
-        <View style={styles.bloodVesselsContainer}>
+        <TouchableOpacity
+          style={[styles.bloodVesselsContainer, isHologram && styles.bloodVesselsContainerHolo]}
+          onPress={() => onOrganPress?.('bloodVessels')}
+          activeOpacity={0.7}
+        >
           <BloodVessels
             recoveryProgress={recoveryProgress}
-            width={SCREEN_WIDTH * 0.92}
-            height={height * 0.98}
+            width={SCREEN_WIDTH * 0.84}
+            height={height * 0.82}
+            animate={!lightweightHologram}
           />
-        </View>
+        </TouchableOpacity>
 
         {/* Lungs positioned behind/around heart */}
-        <View style={styles.lungsContainer}>
+        <TouchableOpacity
+          style={styles.lungsContainer}
+          onPress={() => onOrganPress?.('lungs')}
+          activeOpacity={0.7}
+        >
           <Lungs
             recoveryProgress={recoveryProgress}
-            width={SCREEN_WIDTH * 0.8}
-            height={height * 0.69}
+            width={SCREEN_WIDTH * 0.84}
+            height={height * 0.74}
+            detailLevel={isHologram ? 'normal' : 'high'}
+            animate={!lightweightHologram}
           />
-        </View>
+        </TouchableOpacity>
 
         {/* Heart in the center-front */}
-        <View style={styles.heartContainer}>
+        <TouchableOpacity
+          style={styles.heartContainer}
+          onPress={() => onOrganPress?.('heart')}
+          activeOpacity={0.7}
+        >
           <Heart
             recoveryProgress={recoveryProgress}
-            width={92}
-            height={92}
+            width={108}
+            height={108}
+            detailLevel={isHologram ? 'normal' : 'high'}
+            animate
+          />
+        </TouchableOpacity>
+      </View>
+
+      {showFrame && isHologram && (
+        <View
+          pointerEvents="none"
+          style={styles.foregroundOverlay}
+        >
+          <HologramFrame
+            progress={recoveryProgress}
+            width={SCREEN_WIDTH * 0.95}
+            height={height * 0.98}
+            showSweep={animateFrame}
           />
         </View>
-      </Animated.View>
+      )}
     </View>
   )
 }
@@ -92,18 +114,27 @@ const styles = StyleSheet.create({
   },
   bloodVesselsContainer: {
     position: 'absolute',
-    top: '5%',
+    top: '12%',
     alignItems: 'center',
-    opacity: 0.6,
+    opacity: 0.3,
+  },
+  bloodVesselsContainerHolo: {
+    opacity: 0.22,
   },
   lungsContainer: {
     position: 'absolute',
-    top: '10%',
+    top: '12%',
     alignItems: 'center',
   },
   heartContainer: {
     position: 'absolute',
-    top: '30%',
+    top: '27%',
     alignItems: 'center',
+  },
+  foregroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.78,
   },
 })
