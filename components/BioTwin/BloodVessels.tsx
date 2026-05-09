@@ -19,6 +19,7 @@ interface BloodVesselsProps {
   recoveryProgress: number // 0-1
   width?: number
   height?: number
+  animate?: boolean
 }
 
 // Interpolate between damaged (orange) and healthy (blue/cyan)
@@ -35,20 +36,26 @@ function interpolateColor(progress: number): string {
   return `rgb(${r}, ${g}, ${b})`
 }
 
-export function BloodVessels({ recoveryProgress, width = 200, height = 250 }: BloodVesselsProps) {
+export function BloodVessels({
+  recoveryProgress,
+  width = 200,
+  height = 250,
+  animate = true,
+}: BloodVesselsProps) {
   const color = interpolateColor(recoveryProgress)
 
   // Pulse animation for blood flow
   const pulseOpacity = useSharedValue(0.4)
 
   React.useEffect(() => {
+    if (!animate) return
     pulseOpacity.value = withRepeat(
       withTiming(0.8, { duration: 800, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [animate])
 
   const pulseAnimatedProps = useAnimatedProps(() => ({
     opacity: pulseOpacity.value,
@@ -173,18 +180,20 @@ export function BloodVessels({ recoveryProgress, width = 200, height = 250 }: Bl
 
         {/* Pulse flow indicators */}
         <AnimatedPath
-          animatedProps={pulseAnimatedProps}
+          animatedProps={animate ? pulseAnimatedProps : undefined}
           d="M100 80 L100 90"
           stroke={Colors.healthGreen}
           strokeWidth={3}
           strokeLinecap="round"
+          opacity={animate ? undefined : 0.35}
         />
         <AnimatedPath
-          animatedProps={pulseAnimatedProps}
+          animatedProps={animate ? pulseAnimatedProps : undefined}
           d="M100 160 L100 175"
           stroke={Colors.healthGreen}
           strokeWidth={2}
           strokeLinecap="round"
+          opacity={animate ? undefined : 0.3}
         />
 
         {/* Junction nodes */}

@@ -1,5 +1,5 @@
 /**
- * Lungs - SVG wireframe lung visualization
+ * Lungs - layered SVG hologram lung visualization
  */
 
 import { ColorRGB, Colors } from '@/constants/Colors'
@@ -20,9 +20,24 @@ interface LungsProps {
   recoveryProgress: number // 0-1
   width?: number
   height?: number
+  detailLevel?: 'normal' | 'high'
+  animate?: boolean
 }
 
-// Interpolate between damaged (red) and healthy (cyan) colors
+const LUNG_PATHS = {
+  trachea: 'M100 10 L100 50',
+  bronchiLeft: 'M100 50 L73 69 L54 88',
+  bronchiRight: 'M100 50 L127 69 L146 88',
+  silhouetteLeft:
+    'M54 88 C31 96, 20 113, 20 132 C20 158, 36 172, 62 172 C81 172, 91 157, 91 142 L91 70 C91 60, 76 56, 72 70 L54 88',
+  silhouetteRight:
+    'M146 88 C169 96, 180 113, 180 132 C180 158, 164 172, 138 172 C119 172, 109 157, 109 142 L109 70 C109 60, 124 56, 128 70 L146 88',
+  meshLeft: ['M35 108 L76 119', 'M31 129 L81 136', 'M40 149 L76 156', 'M55 99 L55 161'],
+  meshRight: ['M124 119 L165 108', 'M119 136 L169 129', 'M124 156 L160 149', 'M145 99 L145 161'],
+  vascularLeft: ['M65 74 L49 118', 'M65 86 L58 151', 'M76 95 L72 160', 'M45 122 L66 131'],
+  vascularRight: ['M135 74 L151 118', 'M135 86 L142 151', 'M124 95 L128 160', 'M155 122 L134 131'],
+}
+
 function interpolateColor(progress: number): string {
   const r = Math.round(
     ColorRGB.criticalRed.r + (ColorRGB.neonCyan.r - ColorRGB.criticalRed.r) * progress,
@@ -36,25 +51,34 @@ function interpolateColor(progress: number): string {
   return `rgb(${r}, ${g}, ${b})`
 }
 
-export function Lungs({ recoveryProgress, width = 200, height = 180 }: LungsProps) {
-  const color = interpolateColor(recoveryProgress)
+export function Lungs({
+  recoveryProgress,
+  width = 200,
+  height = 180,
+  detailLevel = 'high',
+  animate = true,
+}: LungsProps) {
+  const clampedProgress = Math.max(0, Math.min(1, recoveryProgress))
+  const color = interpolateColor(clampedProgress)
 
-  // Breathing animation
   const breatheScale = useSharedValue(1)
 
   React.useEffect(() => {
+    if (!animate) return
+    const maxScale = detailLevel === 'high' ? 1.03 : 1.02
+
     breatheScale.value = withRepeat(
       withSequence(
-        withTiming(1.07, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(maxScale, { duration: 2200, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
       false,
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [detailLevel, animate])
 
-  const animatedProps = useAnimatedProps(() => ({
+  const breathingProps = useAnimatedProps(() => ({
     transform: [
       { translateX: 100 },
       { translateY: 90 },
@@ -64,173 +88,149 @@ export function Lungs({ recoveryProgress, width = 200, height = 180 }: LungsProp
     ],
   }))
 
+  const meshLines =
+    detailLevel === 'high'
+      ? [...LUNG_PATHS.meshLeft.slice(0, 3), ...LUNG_PATHS.meshRight.slice(0, 3)]
+      : [LUNG_PATHS.meshLeft[1], LUNG_PATHS.meshRight[1]]
+  const vascularLines =
+    detailLevel === 'high'
+      ? [...LUNG_PATHS.vascularLeft.slice(0, 3), ...LUNG_PATHS.vascularRight.slice(0, 3)]
+      : [LUNG_PATHS.vascularLeft[0], LUNG_PATHS.vascularRight[0]]
+
   return (
     <Svg
       width={width}
       height={height}
       viewBox="0 0 200 180"
     >
-      <AnimatedG animatedProps={animatedProps}>
-        {/* Trachea */}
+      <AnimatedG animatedProps={breathingProps}>
         <Path
-          d="M100 10 L100 50"
+          d={LUNG_PATHS.silhouetteLeft}
           stroke={color}
-          strokeWidth={3}
+          strokeWidth={1.8}
           fill="none"
-          strokeLinecap="round"
+          opacity={0.88}
+        />
+        <Path
+          d={LUNG_PATHS.silhouetteRight}
+          stroke={color}
+          strokeWidth={1.8}
+          fill="none"
+          opacity={0.88}
         />
 
-        {/* Bronchi branches */}
         <Path
-          d="M100 50 L70 70 L50 90"
+          d={LUNG_PATHS.trachea}
+          stroke={color}
+          strokeWidth={2.8}
+          fill="none"
+          strokeLinecap="round"
+          opacity={0.95}
+        />
+        <Path
+          d={LUNG_PATHS.bronchiLeft}
           stroke={color}
           strokeWidth={2}
           fill="none"
           strokeLinecap="round"
+          opacity={0.85}
         />
         <Path
-          d="M100 50 L130 70 L150 90"
+          d={LUNG_PATHS.bronchiRight}
           stroke={color}
           strokeWidth={2}
           fill="none"
           strokeLinecap="round"
+          opacity={0.85}
         />
 
-        {/* Left lung outline */}
-        <Path
-          d="M50 90 
-             C30 95, 20 110, 20 130
-             C20 155, 35 170, 60 170
-             C80 170, 90 155, 90 140
-             L90 70
-             C90 60, 75 55, 70 70
-             L50 90"
-          stroke={color}
-          strokeWidth={1.5}
-          fill="none"
-          opacity={0.8}
-        />
+        <G opacity={0.34}>
+          {meshLines.map((d, index) => (
+            <Path
+              key={`mesh-${index}`}
+              d={d}
+              stroke={color}
+              strokeWidth={0.7}
+              opacity={0.7}
+            />
+          ))}
+        </G>
 
-        {/* Left lung wireframe details */}
-        <Path
-          d="M35 110 L75 120"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.4}
-        />
-        <Path
-          d="M30 130 L80 135"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.4}
-        />
-        <Path
-          d="M40 150 L75 155"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.4}
-        />
-        <Path
-          d="M55 100 L55 160"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.3}
-        />
+        <G opacity={0.42}>
+          {vascularLines.map((d, index) => (
+            <Path
+              key={`vascular-${index}`}
+              d={d}
+              stroke={Colors.holoGlow}
+              strokeWidth={index % 2 === 0 ? 1.1 : 0.8}
+              opacity={0.65}
+              fill="none"
+            />
+          ))}
+        </G>
 
-        {/* Right lung outline */}
-        <Path
-          d="M150 90 
-             C170 95, 180 110, 180 130
-             C180 155, 165 170, 140 170
-             C120 170, 110 155, 110 140
-             L110 70
-             C110 60, 125 55, 130 70
-             L150 90"
-          stroke={color}
-          strokeWidth={1.5}
-          fill="none"
-          opacity={0.8}
-        />
+        <G>
+          {clampedProgress < 0.85 && (
+            <>
+              <Circle
+                cx={44}
+                cy={119}
+                r={4}
+                fill={Colors.damageGlow}
+                opacity={0.7 * (1 - clampedProgress)}
+              />
+              <Circle
+                cx={57}
+                cy={142}
+                r={3}
+                fill={Colors.damageOrange}
+                opacity={0.55 * (1 - clampedProgress)}
+              />
+              <Circle
+                cx={156}
+                cy={123}
+                r={4}
+                fill={Colors.damageGlow}
+                opacity={0.7 * (1 - clampedProgress)}
+              />
+              <Circle
+                cx={143}
+                cy={148}
+                r={3}
+                fill={Colors.damageOrange}
+                opacity={0.55 * (1 - clampedProgress)}
+              />
+            </>
+          )}
 
-        {/* Right lung wireframe details */}
-        <Path
-          d="M125 120 L165 110"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.4}
-        />
-        <Path
-          d="M120 135 L170 130"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.4}
-        />
-        <Path
-          d="M125 155 L160 150"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.4}
-        />
-        <Path
-          d="M145 100 L145 160"
-          stroke={color}
-          strokeWidth={0.5}
-          opacity={0.3}
-        />
-
-        {/* Damage indicators (nodes) - fade with recovery */}
-        {recoveryProgress < 0.8 && (
-          <>
-            <Circle
-              cx={40}
-              cy={120}
-              r={3}
-              fill={Colors.criticalRed}
-              opacity={0.7 * (1 - recoveryProgress)}
-            />
-            <Circle
-              cx={55}
-              cy={140}
-              r={2}
-              fill={Colors.damageOrange}
-              opacity={0.6 * (1 - recoveryProgress)}
-            />
-            <Circle
-              cx={160}
-              cy={125}
-              r={3}
-              fill={Colors.criticalRed}
-              opacity={0.7 * (1 - recoveryProgress)}
-            />
-            <Circle
-              cx={145}
-              cy={150}
-              r={2}
-              fill={Colors.damageOrange}
-              opacity={0.6 * (1 - recoveryProgress)}
-            />
-          </>
-        )}
-
-        {/* Recovery glow nodes - appear with recovery */}
-        {recoveryProgress > 0.3 && (
-          <>
-            <Circle
-              cx={70}
-              cy={130}
-              r={2}
-              fill={Colors.healthGreen}
-              opacity={0.5 * recoveryProgress}
-            />
-            <Circle
-              cx={130}
-              cy={130}
-              r={2}
-              fill={Colors.healthGreen}
-              opacity={0.5 * recoveryProgress}
-            />
-          </>
-        )}
+          {clampedProgress > 0.2 && (
+            <>
+              <Circle
+                cx={70}
+                cy={131}
+                r={2.6}
+                fill={Colors.neonCyan}
+                opacity={0.5 * clampedProgress}
+              />
+              <Circle
+                cx={130}
+                cy={131}
+                r={2.6}
+                fill={Colors.neonCyan}
+                opacity={0.5 * clampedProgress}
+              />
+              {detailLevel === 'high' && (
+                <Circle
+                  cx={100}
+                  cy={106}
+                  r={2.2}
+                  fill={Colors.healthGreen}
+                  opacity={0.45 * clampedProgress}
+                />
+              )}
+            </>
+          )}
+        </G>
       </AnimatedG>
     </Svg>
   )
