@@ -6,7 +6,8 @@ import { ProgressDots } from '@/components/Onboarding/ProgressDots'
 import { GlowText } from '@/components/ui/GlowText'
 import { Colors } from '@/constants/Colors'
 import { Stack, usePathname } from 'expo-router'
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function OnboardingLayout() {
   const pathname = usePathname()

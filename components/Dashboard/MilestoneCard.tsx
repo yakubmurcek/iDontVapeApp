@@ -31,7 +31,7 @@ export function MilestoneCard({ nextMilestone, progress, hoursSinceQuit }: Miles
             />
           </View>
           <View style={styles.completedText}>
-            <Text style={styles.completedTitle}>ALL MILESTONES ACHIEVED</Text>
+            <Text style={styles.completedTitle}>ALL MILESTONES DONE</Text>
             <Text style={styles.completedSubtitle}>Your body continues to heal</Text>
           </View>
         </View>
