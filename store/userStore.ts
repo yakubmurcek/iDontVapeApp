@@ -103,9 +103,15 @@ export const useUserStore = create<UserState>()(
         })
 
         // Schedule notifications for all upcoming milestones
-        scheduleAllUpcomingMilestones(quitDate).catch(() => {})
-        scheduleDailyReminder().catch(() => {})
-        scheduleInactivityWarning().catch(() => {})
+        scheduleAllUpcomingMilestones(quitDate).catch((err) => {
+          if (__DEV__) console.error('[UserStore] Failed to schedule milestones:', err)
+        })
+        scheduleDailyReminder().catch((err) => {
+          if (__DEV__) console.error('[UserStore] Failed to schedule daily reminder:', err)
+        })
+        scheduleInactivityWarning().catch((err) => {
+          if (__DEV__) console.error('[UserStore] Failed to schedule inactivity warning:', err)
+        })
       },
 
       recordRelapse: () => {
@@ -113,7 +119,9 @@ export const useUserStore = create<UserState>()(
         set({ lastVapeDate: now.toISOString(), celebratedMilestoneIds: [] })
 
         // Reschedule all notifications from the new start date
-        rescheduleAfterRelapse(now).catch(() => {})
+        rescheduleAfterRelapse(now).catch((err) => {
+          if (__DEV__) console.error('[UserStore] Failed to reschedule after relapse:', err)
+        })
       },
 
       resetProgress: () => {
@@ -125,7 +133,9 @@ export const useUserStore = create<UserState>()(
         })
 
         // Reschedule notifications
-        rescheduleAfterRelapse(now).catch(() => {})
+        rescheduleAfterRelapse(now).catch((err) => {
+          if (__DEV__) console.error('[UserStore] Failed to reschedule after progress reset:', err)
+        })
       },
 
       clearData: () => {
