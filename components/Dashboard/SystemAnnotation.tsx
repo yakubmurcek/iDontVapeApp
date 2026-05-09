@@ -5,7 +5,7 @@
 
 import { Colors } from '@/constants/Colors'
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -28,12 +28,14 @@ export function SystemAnnotation({
   size = 100,
   position = 'right',
   style,
+  onPress,
 }: {
   score: number
   label: string
   size?: number
   position?: 'left' | 'right'
   style?: any
+  onPress?: () => void
 }) {
   const strokeWidth = 5
   const radius = (size - strokeWidth) / 2
@@ -56,12 +58,15 @@ export function SystemAnnotation({
   const percentage = Math.round(score * 100)
 
   return (
-    <View
+    <TouchableOpacity
       style={[
         styles.container,
         position === 'left' ? styles.containerLeft : styles.containerRight,
         style,
       ]}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={!onPress}
     >
       {/* Connecting line */}
       <Svg
@@ -176,7 +181,7 @@ export function SystemAnnotation({
         <View style={styles.labelDot} />
         <Text style={styles.label}>{label}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   )
 }
 
