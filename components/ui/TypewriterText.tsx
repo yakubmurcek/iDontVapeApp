@@ -21,7 +21,7 @@ interface TypewriterTextProps {
   skipToEnd?: boolean // Skip animation and show full text instantly
 }
 
-export const TypewriterText: React.FC<TypewriterTextProps> = ({
+export function TypewriterText({
   text,
   style,
   speed = 30,
@@ -31,7 +31,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   hideCursorOnComplete = true,
   showCursor,
   skipToEnd = false,
-}) => {
+}: TypewriterTextProps) {
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [hasCompleted, setHasCompleted] = useState(false)
