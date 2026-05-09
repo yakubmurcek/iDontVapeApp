@@ -2,16 +2,14 @@
  * Logs Store - Tracks vaping logs and recovery events
  */
 
+import * as ExpoCrypto from 'expo-crypto'
 import { asyncStorageAdapter } from '@/utils/asyncStorageAdapter'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { LogEntryType, getLogIcon, getLogTitle } from '@/store/logHelpers'
 
-export type LogEntryType =
-  | 'dailyCheckIn'
-  | 'milestoneAchieved'
-  | 'cravingResisted'
-  | 'relapse'
-  | 'appOpened'
+export type { LogEntryType }
+export { getLogIcon, getLogTitle }
 
 export interface VapingLog {
   id: string
@@ -43,7 +41,7 @@ interface LogsState {
 }
 
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 11)
+  return ExpoCrypto.randomUUID()
 }
 
 function dateKey(date: Date): string {
@@ -101,34 +99,3 @@ export const useLogsStore = create<LogsState>()(
     },
   ),
 )
-
-// Helper function for display
-export function getLogIcon(type: LogEntryType): string {
-  switch (type) {
-    case 'dailyCheckIn':
-      return 'check-circle'
-    case 'milestoneAchieved':
-      return 'star'
-    case 'cravingResisted':
-      return 'hand'
-    case 'relapse':
-      return 'alert-triangle'
-    case 'appOpened':
-      return 'eye'
-  }
-}
-
-export function getLogTitle(type: LogEntryType, milestoneId?: string): string {
-  switch (type) {
-    case 'dailyCheckIn':
-      return 'Daily Check-in'
-    case 'milestoneAchieved':
-      return milestoneId ? 'Milestone Achieved' : 'Milestone Achieved'
-    case 'cravingResisted':
-      return 'Craving Resisted'
-    case 'relapse':
-      return 'Setback Logged'
-    case 'appOpened':
-      return 'Session Started'
-  }
-}
