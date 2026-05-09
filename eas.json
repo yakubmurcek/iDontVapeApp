@@ -4,13 +4,14 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "base": {
-      "prebuildCommand": "npm run lint && npm run typecheck"
-    },
+    "base": {},
     "development": {
       "extends": "base",
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development"
+      }
     },
     "preview": {
       "extends": "base",

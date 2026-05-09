@@ -2,6 +2,8 @@
  * Logs Store - Tracks vaping logs and recovery events
  */
 
+import * as ExpoCrypto from 'expo-crypto'
+import { getMilestoneById } from '@/constants/milestones'
 import { asyncStorageAdapter } from '@/utils/asyncStorageAdapter'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
@@ -43,7 +45,7 @@ interface LogsState {
 }
 
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 11)
+  return ExpoCrypto.randomUUID()
 }
 
 function dateKey(date: Date): string {
@@ -79,9 +81,13 @@ export const useLogsStore = create<LogsState>()(
         const grouped = new Map<string, VapingLog[]>()
 
         for (const log of logs) {
-          const key = dateKey(new Date(log.timestamp))
-          const existing = grouped.get(key) || []
-          grouped.set(key, [...existing, log])
+          const key = new Date(log.timestamp).toDateString()
+          let group = grouped.get(key)
+          if (!group) {
+            group = []
+            grouped.set(key, group)
+          }
+          group.push(log)
         }
 
         return grouped
@@ -123,7 +129,7 @@ export function getLogTitle(type: LogEntryType, milestoneId?: string): string {
     case 'dailyCheckIn':
       return 'Daily Check-in'
     case 'milestoneAchieved':
-      return milestoneId ? 'Milestone Achieved' : 'Milestone Achieved'
+      return milestoneId ? (getMilestoneById(milestoneId)?.displayName ?? 'Milestone Achieved') : 'Milestone Achieved'
     case 'cravingResisted':
       return 'Craving Resisted'
     case 'relapse':

@@ -114,32 +114,43 @@ export default function LogsView() {
 
   const daysClean = getDaysSinceQuit()
   const hoursSinceQuit = getHoursSinceQuit()
-  const cravingsResisted = getCravingsResisted()
+  const cravingsResisted = useMemo(() => getCravingsResisted(), [logs])
 
   // Count achieved milestones
   const achievedMilestones = useMemo(() => {
     return MILESTONES.filter((m) => isMilestoneAchieved(m, hoursSinceQuit)).length
   }, [hoursSinceQuit])
 
-  // Group logs by date
+  // Group logs by date - Single pass optimization (logs are pre-sorted newest first)
   const groupedLogs = useMemo(() => {
-    const groups: { [key: string]: VapingLog[] } = {}
+    if (logs.length === 0) return []
+
+    const result: { date: string; logs: VapingLog[] }[] = []
+    let currentDateKey = new Date(logs[0].timestamp).toDateString()
+    let currentGroup: VapingLog[] = []
 
     for (const log of logs) {
       const dateKey = new Date(log.timestamp).toDateString()
-      if (!groups[dateKey]) {
-        groups[dateKey] = []
+      if (dateKey !== currentDateKey) {
+        result.push({
+          date: currentGroup[0].timestamp,
+          logs: currentGroup,
+        })
+        currentDateKey = dateKey
+        currentGroup = [log]
+      } else {
+        currentGroup.push(log)
       }
-      groups[dateKey].push(log)
     }
 
-    // Sort by date descending
-    return Object.entries(groups)
-      .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-      .map(([dateKey, logs]) => ({
-        date: logs[0].timestamp,
-        logs,
-      }))
+    if (currentGroup.length > 0) {
+      result.push({
+        date: currentGroup[0].timestamp,
+        logs: currentGroup,
+      })
+    }
+
+    return result
   }, [logs])
 
   const handleRelapse = () => {
