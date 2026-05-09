@@ -81,9 +81,13 @@ export const useLogsStore = create<LogsState>()(
         const grouped = new Map<string, VapingLog[]>()
 
         for (const log of logs) {
-          const key = dateKey(new Date(log.timestamp))
-          const existing = grouped.get(key) || []
-          grouped.set(key, [...existing, log])
+          const key = new Date(log.timestamp).toDateString()
+          let group = grouped.get(key)
+          if (!group) {
+            group = []
+            grouped.set(key, group)
+          }
+          group.push(log)
         }
 
         return grouped
